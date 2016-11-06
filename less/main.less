@@ -4,13 +4,45 @@
 @scheme-alt-dark: #6a5837;
 @scheme-alt-light: #bfb48f;
 
-body {
+.main {
   background-color: @scheme-light;
   color: @scheme-dark;
 }
 
+/* Hide for mobile, show later */
 .sidebar {
-  background-color: @scheme-alt-dark;
+  display: none;
+}
+@media (min-width: 768px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1000;
+    display: block;
+    padding: 20px;
+    overflow-x: hidden;
+    overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
+    background-color: @scheme-alt-dark;
+  }
+}
+
+/* Sidebar navigation */
+.nav-sidebar {
+  margin-right: -21px; /* 20px padding + 1px border */
+  margin-bottom: 20px;
+  margin-left: -20px;
+}
+.nav-sidebar > li > a {
+  padding-right: 20px;
+  padding-left: 20px;
   color: @scheme-alt-light;
-  padding: 25px;
+}
+.nav-sidebar > .active > a,
+.nav-sidebar > .active > a:hover,
+.nav-sidebar > .active > a:focus {
+  color: @scheme-alt-light;
+  background-color: @scheme-alt-dark;
+  border: none;
 }
