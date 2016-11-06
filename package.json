@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/se42/nodesite#readme",
   "dependencies": {
+    "less": "^2.7.1",
     "minimist": "^1.2.0"
   }
 }
