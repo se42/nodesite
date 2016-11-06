@@ -1,0 +1,22 @@
+{
+  "name": "scottmedwards_app",
+  "version": "0.1.0",
+  "description": "Node Playground Environment",
+  "main": "startup.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/se42/nodesite.git"
+  },
+  "author": "Scott Edwards",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/se42/nodesite/issues"
+  },
+  "homepage": "https://github.com/se42/nodesite#readme",
+  "dependencies": {
+    "minimist": "^1.2.0"
+  }
+}

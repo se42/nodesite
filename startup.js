@@ -1,6 +1,6 @@
 var http = require('http');
 var fs = require('fs');
-var port = process.argv[2];
+var argv = require('minimist')(process.argv.slice(2));
 
 http.createServer(function (request, response) {
   fs.readFile(__dirname + '/hello_world.html', (error, htmlContent) => {
@@ -11,4 +11,4 @@ http.createServer(function (request, response) {
     response.writeHead(200, {'Content-Type': 'text/html'});
     response.end(htmlContent);
   });
-}).listen(port, 'localhost');
+}).listen(argv.port, 'localhost');
