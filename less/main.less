@@ -1,12 +1,12 @@
-@scheme-dark: #0d1f2d;
-@scheme-light: #ebf5df;
-@scheme-pop: #71b340;
-@scheme-alt-dark: #6a5837;
-@scheme-alt-light: #bfb48f;
+@scheme-primary-dark: #1A1423;
+@scheme-primary-light: #98C1D9;
+@scheme-alt-dark: #B7AD99;
+@scheme-alt-light: #FDFDFF;
+@scheme-pop: #79B791;
 
 .main {
-  background-color: @scheme-light;
-  color: @scheme-dark;
+  background-color: @scheme-alt-light;
+  color: @scheme-primary-dark;
 }
 
 /* Hide for mobile, show later */
@@ -24,7 +24,7 @@
     padding: 20px;
     overflow-x: hidden;
     overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
-    background-color: @scheme-alt-dark;
+    background-color: @scheme-primary-dark;
   }
 }
 
@@ -37,12 +37,12 @@
 .nav-sidebar > li > a {
   padding-right: 20px;
   padding-left: 20px;
-  color: @scheme-alt-light;
+  color: @scheme-alt-dark;
 }
 .nav-sidebar > .active > a,
 .nav-sidebar > .active > a:hover,
 .nav-sidebar > .active > a:focus {
   color: @scheme-alt-light;
-  background-color: @scheme-alt-dark;
+  background-color: @scheme-pop;
   border: none;
 }
