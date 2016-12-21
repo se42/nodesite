@@ -7,5 +7,5 @@ git push
 
 npm install
 sudo lessc /home/Scott/scottmedwards_app/less/main.less /var/www/scottmedwards_app/css/main.css
-cp /home/Scott/scottmedwards_app/assets/img/* /var/www/scottmedwards_app/img/
+sudo cp /home/Scott/scottmedwards_app/assets/img/* /var/www/scottmedwards_app/img/
 pm2 restart app
