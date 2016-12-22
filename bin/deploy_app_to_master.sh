@@ -6,6 +6,7 @@ git merge develop
 git push
 
 npm install
-sudo lessc /home/Scott/scottmedwards_app/less/main.less /var/www/scottmedwards_app/css/main.css
-cp /home/Scott/scottmedwards_app/assets/img/* /var/www/scottmedwards_app/img/
+sudo lessc /home/Scott/scottmedwards_app/public/less/main.less /var/www/scottmedwards_app/css/main.css
+cp /home/Scott/scottmedwards_app/public/img/* /var/www/scottmedwards_app/img/
+cp /home/Scott/scottmedwards_app/public/js/* /var/www/scottmedwards_app/js/
 pm2 restart app

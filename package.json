@@ -2,7 +2,7 @@
   "name": "scottmedwards_app",
   "version": "0.1.0",
   "description": "Node Playground Environment",
-  "main": "startup.js",
+  "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -17,7 +17,9 @@
   },
   "homepage": "https://github.com/se42/nodesite#readme",
   "dependencies": {
+    "express": "^4.14.0",
     "less": "^2.7.1",
-    "minimist": "^1.2.0"
+    "minimist": "^1.2.0",
+    "pug": "^2.0.0-beta6"
   }
 }
