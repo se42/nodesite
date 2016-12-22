@@ -26,7 +26,7 @@ body
         //- Sidebar
         #sidebar-wrapper
             ul.sidebar-nav
-                li.sidebar-brand: a(href="#") Scott Edwards
+                li.sidebar-brand: a(href="/") Scott Edwards
                 li: a(href="/me") About Me
                 li: a(href="/site") About This Site
                 li: a(href="#") Project 1
@@ -35,23 +35,8 @@ body
         //- Make sure to keep all page content within the #page-content-wrapper
         #page-content-wrapper
             .container-fluid
-                .row
-                    .col-sm-3
-                        img.img-responsive.img-thumbnail(src="img/my_face.jpg" alt="Responsive image")
-                    .col-sm-9
-                        h1 Hello, World!
-                        p
-                            | My old Django-based website was completely out of date (it was ~6
-                            | months old), so I just started over.  I'm building this one from
-                            | scratch with all new information and using new(er)-to-me technologies.
-                            | Right now I'm working on getting the back end configured and development
-                            | processes worked out so I have a nice place to do cool things on the internet.
-                        p
-                            | I'm planning to use this site as a place for me to put project work.
-                            | Right now I'm working through a course in algorithms and data structures,
-                            | and will use this site to host some of the work I do on that project.
-
-        //- Make sure to keep all page content within the #page-content-wrapper
+                block content
+                    p.lead Making things happen...
 
     //- jQuery
     script(src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous")
