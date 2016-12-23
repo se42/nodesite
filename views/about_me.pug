@@ -2,17 +2,63 @@ extends base.pug
 
 block content
     .row
-        .col-sm-3
-            img.img-responsive.img-thumbnail(src="img/my_face.jpg" alt="Responsive image")
-        .col-sm-9
-            h1 Hello, Extended World!
-            p
-                | My old Django-based website was completely out of date (it was ~6
-                | months old), so I just started over.  I'm building this one from
-                | scratch with all new information and using new(er)-to-me technologies.
-                | Right now I'm working on getting the back end configured and development
-                | processes worked out so I have a nice place to do cool things on the internet.
-            p
-                | I'm planning to use this site as a place for me to put project work.
-                | Right now I'm working through a course in algorithms and data structures,
-                | and will use this site to host some of the work I do on that project.
+        .col-sm-4
+            .thumbnail.headshot
+                img.img-responsive.img-rounded(src="img/my_face.jpg" alt="Responsive image")
+                .caption.text-center
+                    p
+                        ul.list-inline.social-links
+                            li: a(href="#"): i.fa.fa-3x.fa-github(aria-hidden="true")
+                            li: a(href="#"): i.fa.fa-3x.fa-linkedin(aria-hidden="true")
+                    h3 Skills & Tools
+                    p JavaScript
+                    p CoffeeScript
+                    p Python
+                    p MongoDB & PostgreSQL
+                    p Meteor Web Framework
+                    p Django Web Framework
+                    p Nginx & Node.js/Express
+                    p Git & Atlassian Tools
+                    p Ubuntu
+        .col-sm-8
+            .text-center
+                h1 About Me
+                p.lead
+                    | My name is Scott Edwards and I'm a Jr. Software Engineer.
+                p.lead
+                    | I got bored in my old job and taught myself how to program.
+            .text-justify
+                p
+                    | Growing up I was always your typical math and science kid, so
+                    | when I got into Georgia Tech it was the easiest decision of my
+                    | life to go.  I majored in biochemistry but didn't think a PhD
+                    | was right for me at the time, so I went to Duke for the Master
+                    | of Engineering Management program and then worked for 5 years
+                    | as the operations manager in a small company building analytical
+                    | scientific instruments.
+                p
+                    | Eventually I got pretty bored placing purchase orders and monitoring
+                    | inventory levels.  I kept hearing the engineers talking about
+                    | Python this and Python that, and since it sounded cool I secretly
+                    | started to teach myself about this Python thing.  At first it was
+                    | just the CodeCademy course, then it was a Udemy data science course,
+                    | then I started messing around with Django, then I started messing
+                    | around with Linux, and now I'm past the point of no return, deep
+                    | into the rabbit hole that is computer science.  And I love it.
+                p
+                    | Over the summer in 2016, I took some time off to
+                    | really commit to a new career, and at the end of August I started
+                    | my first job as a Jr. Software Engineer in a small biotech startup.
+                    | I learned a lot on my own over the summer, but working in a
+                    | professional environment has really inspired me to keep pushing
+                    | to see how far I can go with this new career.  I'm also an Ironman
+                    | finisher, so a big part of this is challenging myself to see how
+                    | far I can go.  That's something I never felt in operations management.
+                p
+                    | My goal now is to be able to deliver complete web applications
+                    | on Linux systems, so my interests lie in everything from system
+                    | configuration and devops to application code to producing a functional
+                    | UI, although I’m definitely not a designer.  That's why I built this
+                    | site more or less from scratch&mdash;it might not look like much,
+                    | but it's hopefully going to be an awesome place to do cool things
+                    | on the internet.

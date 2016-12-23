@@ -5,7 +5,7 @@ var app = express();
 
 app.set('view engine', 'pug');
 app.set('views', './views');
-app.get('/', (req, res) => res.render('base'));
+app.get('/', (req, res) => res.render('about_me'));
 app.get('/me', (req, res) => res.render('about_me'));
 app.get('/site', (req, res) => res.render('about_site'));
 
