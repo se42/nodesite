@@ -42,8 +42,21 @@ body {
 
 .main-content {
     background: @theme-light;
-    min-height: 1000px;
     padding: 20px 30px;
+
+    // Make sure main-content is always (reasonably) taller than the screen
+    @media (min-height: 700px) {
+        min-height: 900px;
+    }
+    @media (min-height: 900px) {
+        min-height: 1100px;
+    }
+    @media (min-height: 1100px) {
+        min-height: 1300px;
+    }
+    @media (min-height: 1300px) {
+        min-height: 1500px;
+    }
 }
 
 
