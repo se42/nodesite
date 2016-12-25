@@ -19,6 +19,7 @@ function commonGet(location, template) {
 commonGet('/', 'about_me');
 commonGet('/me', 'about_me');
 commonGet('/site', 'about_site');
+commonGet('/candles', 'candles');
 
 app.listen(argv.port, function() {
     console.log(`App listening on port ${argv.port}`);
