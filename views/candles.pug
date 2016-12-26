@@ -21,12 +21,10 @@ block content
 
     .row
         .col-xs-12
-            .panel.panel-default
-                .panel-body
-                    .room
-                        script#candles-template(type="text/ractive")
-                            include candles-template
-                        #candles-visualization
+            .room
+                script#candles-template(type="text/ractive")
+                    include candles-template
+                #candles-visualization
 
 block scripts-foot
     script(src="js/candles.js")

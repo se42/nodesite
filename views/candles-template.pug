@@ -1,9 +1,13 @@
+h3 Candle Lighting Visualization (N = {{size}})
+h4 Number of candles:  {{numberOfCandles}}
+h4 Seconds passed:  {{currentStep}}
+
 | {{#each grid as row}}
 | {{#each row}}
 | {{#if isLit}}
-i.fa.fa-fire.candle(aria-hidden="true" lit)
+i(class="{{repr}}" aria-hidden="true" lit)
 | {{else}}
-i.fa.fa-fire.candle(aria-hidden="true")
+i(class="{{repr}}" aria-hidden="true")
 | {{/if}}
 | {{/each}}
 br
