@@ -1,0 +1,10 @@
+| {{#each grid as row}}
+| {{#each row}}
+| {{#if isLit}}
+i.fa.fa-fire.candle(aria-hidden="true" lit)
+| {{else}}
+i.fa.fa-fire.candle(aria-hidden="true")
+| {{/if}}
+| {{/each}}
+br
+| {{/each}}

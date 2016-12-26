@@ -1,7 +1,32 @@
 extends base
 
 block content
-    p Candles problem
+    .row
+        .col-xs-12
+            p Candles problem
+            ul.list-unstyled
+                li
+                    i.fa.fa-fire.candle(aria-hidden="true" lit)
+                    |  Lit candle
+                li
+                    i.fa.fa-fire.candle(aria-hidden="true")
+                    |  Unlit candle
+
+            p Notes to describe
+            ul
+                li Pug/ractive integration
+                ul
+                    li Reference https://tribex.github.io/out/blog/posts/Using%20Jade%20With%20Ractive.js.html
+                    li note the need to use | so Pug correctly interprets Ractive/Mustache markup
+
+    .row
+        .col-xs-12
+            .panel.panel-default
+                .panel-body
+                    .room
+                        script#candles-template(type="text/ractive")
+                            include candles-template
+                        #candles-visualization
 
 block scripts-foot
     script(src="js/candles.js")
