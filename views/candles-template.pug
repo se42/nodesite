@@ -1,10 +1,9 @@
 h3 Candle Lighting Visualization (N = {{size}})
-h4 Number of candles:  {{numberOfCandles}}
-h4 Seconds passed:  {{currentStep}}
+h4 Number of candles:  {{numOfCandlesToLight}}
 
 | {{#each grid as row}}
 | {{#each row}}
-| {{#if isLit}}
+| {{#if candle.isLit}}
 i(class="{{repr}}" aria-hidden="true" lit)
 | {{else}}
 i(class="{{repr}}" aria-hidden="true")
