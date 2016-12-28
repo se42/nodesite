@@ -7,10 +7,10 @@ function getRandomIntInclusive(min, max) {
 // these will be used for setTimeouts, which aren't perfect for timing
 // but it's a simulation so that's OK, just more randomness
 TIME_SCALE = 0.25;
-MIN_MS_TO_LIGHT_CANDLE = 1.0;
-MAX_MS_TO_LIGHT_CANDLE = 1.0;
+MIN_MS_TO_LIGHT_CANDLE = 3.0;
+MAX_MS_TO_LIGHT_CANDLE = 7.0;
 MIN_MS_FOR_USHER_MOVEMENT = 0.5;
-MAX_MS_FOR_USHER_MOVEMENT = 5;
+MAX_MS_FOR_USHER_MOVEMENT = 1.5;
 
 function getMillisecondsToLightCandle() {
     return 1000 * getRandomIntInclusive(MIN_MS_TO_LIGHT_CANDLE, MAX_MS_TO_LIGHT_CANDLE) * TIME_SCALE;
@@ -128,9 +128,6 @@ class Usher extends AbstractGridLocation {
                 this.doNextMove(iTarget, jTarget, attempts + 1);
             }, getMillisecondsForUsherMovement());
         }
-        else if (attempts === 20) {
-            this.move(this.i - iMove, this.j - jMove);
-        }
         // attempted diagonal move is blocked
         else if (Math.abs(iMove) === 1 && Math.abs(jMove) === 1) {
             // attempt lateral moves
@@ -140,9 +137,10 @@ class Usher extends AbstractGridLocation {
             else if (grid[iNext][this.j].isEmptySpace) {
                 this.move(iNext, this.j);
             }
-            // else {
-            //     throw new Error(`Usher ${this.id} is stuck at ${this.i}-${this.j}!!`);
-            // }
+            else {
+                // throw new Error(`Usher ${this.id} is stuck at ${this.i}-${this.j}!!`);
+                this.move(this.i, this.j);
+            }
         }
         // attempted horizontal move is blocked
         else if (iMove === 0 && Math.abs(jMove) === 1) {
@@ -153,9 +151,10 @@ class Usher extends AbstractGridLocation {
             else if (grid[this.i - 1][jNext].isEmptySpace) {
                 this.move(this.i - 1, jNext);
             }
-            // else {
-            //     throw new Error(`Usher ${this.id} is stuck at ${this.i}-${this.j}!!`);
-            // }
+            else {
+                // throw new Error(`Usher ${this.id} is stuck at ${this.i}-${this.j}!!`);
+                this.move(this.i, this.j);
+            }
         }
         // attempted vertical move is blocked
         else if (Math.abs(iMove) === 1 && jMove === 0) {
