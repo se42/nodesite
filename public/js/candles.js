@@ -10,7 +10,7 @@ TIME_SCALE = 0.25;
 MIN_MS_TO_LIGHT_CANDLE = 1.0;
 MAX_MS_TO_LIGHT_CANDLE = 1.0;
 MIN_MS_FOR_USHER_MOVEMENT = 0.5;
-MAX_MS_FOR_USHER_MOVEMENT = 1.5;
+MAX_MS_FOR_USHER_MOVEMENT = 5;
 
 function getMillisecondsToLightCandle() {
     return 1000 * getRandomIntInclusive(MIN_MS_TO_LIGHT_CANDLE, MAX_MS_TO_LIGHT_CANDLE) * TIME_SCALE;
@@ -25,13 +25,6 @@ class Candle {
     constructor() {
         this.isLit = false;
     }
-
-    light(nextAction) {
-        setTimeout(() => {
-            this.isLit = true;
-            nextAction();
-        }, getMillisecondsToLightCandle());
-    }
 }
 
 class AbstractGridLocation {
@@ -40,6 +33,7 @@ class AbstractGridLocation {
         this.i = i;
         this.j = j;
         this.isEmptySpace = false;
+        this.isMobile = false;
     }
 }
 
@@ -66,13 +60,13 @@ class Usher extends AbstractGridLocation {
         this.runner = runner;
         this.candle = new Candle();
         this.origin = {i: i, j: j};
+        this.isMobile = true;
     }
 
     doStep() {
         let grid = this.runner.ractive.get("grid");
         if (grid[this.i][this.j].candle.isLit) {
             // perform job per specified algorithm (can eventually come through Ractive)
-            console.log(`Usher ${this.id} is ready to work!`);
             this.goToTarget(this.origin.i, this.origin.j, () => {
                 console.log(`Usher ${this.id} is done!`);
             });
@@ -107,11 +101,11 @@ class Usher extends AbstractGridLocation {
             actionAtTarget();
         }
         else {
-            this.determineNextMove(iTarget, jTarget, 0);
+            this.doNextMove(iTarget, jTarget, 0);
         }
     }
 
-    determineNextMove(iTarget, jTarget, attempts) {
+    doNextMove(iTarget, jTarget, attempts) {
         // FIXME - this will get stuck if an usher ever needs to move
         // AWAY from the target to eventually get there
         let iMove = 0;
@@ -128,24 +122,27 @@ class Usher extends AbstractGridLocation {
         if (grid[iNext][jNext].isEmptySpace) {
             this.move(iNext, jNext);
         }
-        else if (attempts < 5) {
-            // just queue up another attempt later
+        else if (attempts < 20 && grid[iNext][jNext].isMobile) {
+            // just queue up another attempt later b/c the Usher may move
             setTimeout(() => {
-                this.determineNextMove(iTarget, jTarget, attempts + 1);
+                this.doNextMove(iTarget, jTarget, attempts + 1);
             }, getMillisecondsForUsherMovement());
+        }
+        else if (attempts === 20) {
+            this.move(this.i - iMove, this.j - jMove);
         }
         // attempted diagonal move is blocked
         else if (Math.abs(iMove) === 1 && Math.abs(jMove) === 1) {
             // attempt lateral moves
             if (grid[this.i][jNext].isEmptySpace) {
-                this.move(this.i, jNext)
+                this.move(this.i, jNext);
             }
             else if (grid[iNext][this.j].isEmptySpace) {
-                this.move(iNext, this.j)
+                this.move(iNext, this.j);
             }
-            else {
-                throw new Error(`Usher ${this.id} is stuck at ${this.i}-${this.j}!!`);
-            }
+            // else {
+            //     throw new Error(`Usher ${this.id} is stuck at ${this.i}-${this.j}!!`);
+            // }
         }
         // attempted horizontal move is blocked
         else if (iMove === 0 && Math.abs(jMove) === 1) {
@@ -156,9 +153,9 @@ class Usher extends AbstractGridLocation {
             else if (grid[this.i - 1][jNext].isEmptySpace) {
                 this.move(this.i - 1, jNext);
             }
-            else {
-                throw new Error(`Usher ${this.id} is stuck at ${this.i}-${this.j}!!`);
-            }
+            // else {
+            //     throw new Error(`Usher ${this.id} is stuck at ${this.i}-${this.j}!!`);
+            // }
         }
         // attempted vertical move is blocked
         else if (Math.abs(iMove) === 1 && jMove === 0) {
@@ -170,7 +167,8 @@ class Usher extends AbstractGridLocation {
                 this.move(iNext, this.j - 1);
             }
             else {
-                throw new Error(`Usher ${this.id} is stuck at ${this.i}-${this.j}!!`);
+                // throw new Error(`Usher ${this.id} is stuck at ${this.i}-${this.j}!!`);
+                this.move(this.i, this.j);
             }
         }
         else {
@@ -252,7 +250,6 @@ class SimulationRunner {
         this.ractive = new Ractive({
             el: "#candles-visualization",
             template: "#candles-template",
-            magic: true,
             data: {
                 size: seatingGrid.size,
                 center: seatingGrid.center,
@@ -280,7 +277,7 @@ class SimulationRunner {
 
     run() {
         this.ractive.get("ushers").forEach((usher) => {
-            if (usher.id < 10) {
+            if (usher.id < 16) {
                 setTimeout(() => {
                 usher.doStep();
             }, getMillisecondsForUsherMovement());
@@ -300,6 +297,9 @@ class SimulationRunner {
         let isEmptySpace = this.ractive.get(`grid.${iNext}.${jNext}.isEmptySpace`);
         if (usher.i === iNext && usher.j === jNext) {
             console.log(`Usher ${id} has decided to not move`);
+            setTimeout(() => {
+                usher.doStep();
+            }, getMillisecondsForUsherMovement());
         }
         else if (iNext - usher.i > 1 || jNext - usher.j > 1) {
             throw new Error(`Usher ${id} has submitted an invalid move`);
@@ -321,7 +321,10 @@ class SimulationRunner {
             });
         }
         else {
-            throw new Error(`Failed to move Usher ${id} to ${iNext}-${jNext}`);
+            console.error(`Failed to move Usher ${id} to ${iNext}-${jNext} from ${usher.i}-${usher.j}`);
+            setTimeout(() => {
+                usher.doStep();
+            }, getMillisecondsForUsherMovement());
         }
     }
 
