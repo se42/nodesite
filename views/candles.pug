@@ -3,20 +3,9 @@ extends base
 block content
     .row
         .col-xs-12
-            p Candles problem
-            ul.list-unstyled
-                li
-                    i.fa.fa-fire.candle(aria-hidden="true" lit)
-                    |  Lit candle
-                li
-                    i.fa.fa-fire.candle(aria-hidden="true")
-                    |  Unlit candle
-                li Figure out how to rotate candles so the orientation indicates which
-                    |  way the "person" is facing
-
             p Notes to describe
             ul
-                li Pug/ractive integration
+                li Pug/Ractive integration
                 ul
                     li Reference https://tribex.github.io/out/blog/posts/Using%20Jade%20With%20Ractive.js.html
                     li note the need to use | so Pug correctly interprets Ractive/Mustache markup
@@ -29,6 +18,9 @@ block content
                     |  but is really hard to do.
                 li Yet ANOTHER reminder that anything called magic mode is usually
                     |  NOT what I'm looking for
+            ul
+                li "One Blind Move" method has a tendency to get stuck but will occasionally work out of a jam
+                li Introducing the pause for candle lighting <i>really</i> messes with the one blind move algorithm as the other ushers just pile into the surrounding blocks leading <strong>most</strong> runs to deadlock
 
     .row
         .col-xs-12
