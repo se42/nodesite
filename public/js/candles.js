@@ -1,3 +1,4 @@
+// copied this straight off the MDN page for Math.random
 function getRandomIntInclusive(min, max) {
     min = Math.ceil(min);
     max = Math.floor(max);
@@ -10,7 +11,7 @@ TIME_SCALE = 0.25;
 MIN_MS_TO_LIGHT_CANDLE = 3.0;
 MAX_MS_TO_LIGHT_CANDLE = 7.0;
 MIN_MS_FOR_USHER_MOVEMENT = 0.5;
-MAX_MS_FOR_USHER_MOVEMENT = 1.5;
+MAX_MS_FOR_USHER_MOVEMENT = 2.5;
 
 function getMillisecondsToLightCandle() {
     return 1000 * getRandomIntInclusive(MIN_MS_TO_LIGHT_CANDLE, MAX_MS_TO_LIGHT_CANDLE) * TIME_SCALE;
