@@ -7,8 +7,8 @@ function getRandomIntInclusive(min, max) {
 // these will be used for setTimeouts, which aren't perfect for timing
 // but it's a simulation so that's OK, just more randomness
 TIME_SCALE = 0.25;
-MIN_MS_TO_LIGHT_CANDLE = 3.0;
-MAX_MS_TO_LIGHT_CANDLE = 7.0;
+MIN_MS_TO_LIGHT_CANDLE = 1.0;
+MAX_MS_TO_LIGHT_CANDLE = 1.0;
 MIN_MS_FOR_USHER_MOVEMENT = 0.5;
 MAX_MS_FOR_USHER_MOVEMENT = 1.5;
 
@@ -43,88 +43,6 @@ class AbstractGridLocation {
     }
 }
 
-class Usher extends AbstractGridLocation {
-    constructor(i, j, id, ractive) {
-        super(i, j);
-        this.repr += " fa-user candle";
-        this.id = id;
-        this.ractive = ractive;
-        this.candle = new Candle();
-    }
-
-    startJob() {
-        if (this.candle.isLit) {
-            // perform job per specified algorithm (can eventually come through Ractive)
-            console.log(`Usher ${this.id} is ready to work!`);
-        }
-        else {
-            this.lightCandle();
-        }
-    }
-
-    lightCandle() {
-        if (this.isUsherAtCenterCandle()){
-            this.candle.light(() => this.startJob());
-        }
-        else {
-            let center = this.ractive.get("center");
-            this.goToTarget(center + 1, center, (ractive) => {
-                this.lightCandle();
-            });
-        }
-    }
-
-    isUsherAtCenterCandle() {
-        // Ushers must light candle at point (center + 1, center), e.g. right below it on the grid
-        let absValI = Math.abs(this.ractive.get("center") + 1 - this.i);
-        let absValJ = Math.abs(this.ractive.get("center") - this.j);
-        return absValI === 0 && absValJ === 0;
-    }
-
-    goToTarget(iTarget, jTarget, actionAtTarget) {
-        if (this.i === iTarget && this.j === jTarget) {
-            actionAtTarget();
-        }
-        else {
-            let iMove = 0;
-            let jMove = 0;
-            if (iTarget - this.i !== 0) {
-                iMove = (iTarget - this.i) / Math.abs(iTarget - this.i);
-            }
-            if (jTarget - this.j !== 0) {
-                jMove = (jTarget - this.j) / Math.abs(jTarget - this.j);
-            }
-            let iNext = this.i + iMove;
-            let jNext = this.j + jMove;
-            setTimeout(() => {
-                this.move(iNext, jNext);
-                this.goToTarget(iTarget, jTarget, actionAtTarget);
-            }, getMillisecondsForUsherMovement());
-        }
-    }
-
-    assess(seatingGrid, mode) {
-        // assess this.i, this.j and the given seatingGrid to determine next move
-    }
-
-    move(iNext, jNext) {
-        // This is basically an Usher "trading places" with an EmptySpace
-        // Person objects will not have this interface and cannot be moved
-        let oldKeypath = `grid.${this.i}.${this.j}`;
-        let newKeypath = `grid.${iNext}.${jNext}`;
-        let emptySpace = this.ractive.get(newKeypath);
-        if (emptySpace.isEmptySpace) {
-            this.i = iNext;
-            this.j = jNext;
-            this.ractive.set(newKeypath, this);
-            this.ractive.set(oldKeypath, emptySpace);
-        }
-        else {
-            throw new Error(`Usher ${this.i}-${this.j} cannot move to ${iNext}-${jNext}`);
-        }
-    }
-}
-
 class Person extends AbstractGridLocation {
     constructor(i, j) {
         super(i, j);
@@ -137,6 +55,131 @@ class EmptySpace extends AbstractGridLocation {
     constructor(i, j) {
         super(i, j);
         this.isEmptySpace = true;
+    }
+}
+
+class Usher extends AbstractGridLocation {
+    constructor(i, j, id, runner) {
+        super(i, j);
+        this.repr += " fa-user candle";
+        this.id = id;
+        this.runner = runner;
+        this.candle = new Candle();
+        this.origin = {i: i, j: j};
+    }
+
+    doStep() {
+        let grid = this.runner.ractive.get("grid");
+        if (grid[this.i][this.j].candle.isLit) {
+            // perform job per specified algorithm (can eventually come through Ractive)
+            console.log(`Usher ${this.id} is ready to work!`);
+            this.goToTarget(this.origin.i, this.origin.j, () => {
+                console.log(`Usher ${this.id} is done!`);
+            });
+        }
+        else {
+            this.lightCandle();
+        }
+    }
+
+    lightCandle() {
+        if (this.isUsherAtCenterCandle()){
+            this.runner.lightCandle(`ushers.${this.id}`);
+            this.runner.doNextStep(this.id);
+        }
+        else {
+            let center = this.runner.ractive.get("center");
+            this.goToTarget(center + 1, center, () => {
+                this.lightCandle();
+            });
+        }
+    }
+
+    isUsherAtCenterCandle() {
+        // Ushers must light candle at point (center + 1, center), e.g. right below it on the grid
+        let absValI = Math.abs(this.runner.ractive.get("center") + 1 - this.i);
+        let absValJ = Math.abs(this.runner.ractive.get("center") - this.j);
+        return absValI === 0 && absValJ === 0;
+    }
+
+    goToTarget(iTarget, jTarget, actionAtTarget) {
+        if (this.i === iTarget && this.j === jTarget) {
+            actionAtTarget();
+        }
+        else {
+            this.determineNextMove(iTarget, jTarget, 0);
+        }
+    }
+
+    determineNextMove(iTarget, jTarget, attempts) {
+        // FIXME - this will get stuck if an usher ever needs to move
+        // AWAY from the target to eventually get there
+        let iMove = 0;
+        let jMove = 0;
+        if (iTarget - this.i !== 0) {
+            iMove = (iTarget - this.i) / Math.abs(iTarget - this.i);
+        }
+        if (jTarget - this.j !== 0) {
+            jMove = (jTarget - this.j) / Math.abs(jTarget - this.j);
+        }
+        let iNext = this.i + iMove;
+        let jNext = this.j + jMove;
+        let grid = this.runner.ractive.get("grid");
+        if (grid[iNext][jNext].isEmptySpace) {
+            this.move(iNext, jNext);
+        }
+        else if (attempts < 5) {
+            // just queue up another attempt later
+            setTimeout(() => {
+                this.determineNextMove(iTarget, jTarget, attempts + 1);
+            }, getMillisecondsForUsherMovement());
+        }
+        // attempted diagonal move is blocked
+        else if (Math.abs(iMove) === 1 && Math.abs(jMove) === 1) {
+            // attempt lateral moves
+            if (grid[this.i][jNext].isEmptySpace) {
+                this.move(this.i, jNext)
+            }
+            else if (grid[iNext][this.j].isEmptySpace) {
+                this.move(iNext, this.j)
+            }
+            else {
+                throw new Error(`Usher ${this.id} is stuck at ${this.i}-${this.j}!!`);
+            }
+        }
+        // attempted horizontal move is blocked
+        else if (iMove === 0 && Math.abs(jMove) === 1) {
+            // attempt diagonal moves in same direction
+            if (grid[this.i + 1][jNext].isEmptySpace) {
+                this.move(this.i + 1, jNext);
+            }
+            else if (grid[this.i - 1][jNext].isEmptySpace) {
+                this.move(this.i - 1, jNext);
+            }
+            else {
+                throw new Error(`Usher ${this.id} is stuck at ${this.i}-${this.j}!!`);
+            }
+        }
+        // attempted vertical move is blocked
+        else if (Math.abs(iMove) === 1 && jMove === 0) {
+            // attempt diagonal moves in same direction
+            if (grid[iNext][this.j + 1].isEmptySpace) {
+                this.move(iNext, this.j + 1);
+            }
+            else if (grid[iNext][this.j - 1].isEmptySpace) {
+                this.move(iNext, this.j - 1);
+            }
+            else {
+                throw new Error(`Usher ${this.id} is stuck at ${this.i}-${this.j}!!`);
+            }
+        }
+        else {
+            this.move(iNext, jNext); // this should be a choice of no movement if it gets here
+        }
+    }
+
+    move(iNext, jNext) {
+        this.runner.moveUsher(this.id, iNext, jNext);
     }
 }
 
@@ -220,8 +263,6 @@ class SimulationRunner {
             }
         });
 
-        // let size = this.ractive.get("size");
-        // let center = this.ractive.get("center");
         let size = seatingGrid.size;
         let center = seatingGrid.center;
 
@@ -229,19 +270,64 @@ class SimulationRunner {
             for (let j = 0; j < size; j += center) {
                 if (!(i === center && j === center)) {
                     let id = this.ractive.get("ushers").length;
-                    let usher = new Usher(i, j, id, this.ractive);
+                    let usher = new Usher(i, j, id, this);
                     this.ractive.push("ushers", usher);
-                    let keypath = `grid.${i}.${j}`;
-                    this.ractive.set(keypath, usher);
+                    this.ractive.set(`grid.${i}.${j}`, usher);
                 }
             }
         }
-
-        
     }
 
     run() {
-        this.ractive.get("ushers").forEach((usher) => usher.startJob());
+        this.ractive.get("ushers").forEach((usher) => {
+            if (usher.id < 10) {
+                setTimeout(() => {
+                usher.doStep();
+            }, getMillisecondsForUsherMovement());
+            }
+        });
+    }
+
+    doNextStep(usherId) {
+        setTimeout(() => {
+            this.ractive.get(`ushers.${usherId}`).doStep();
+        }, getMillisecondsForUsherMovement());
+    }
+
+    moveUsher(id, iNext, jNext, attempts) {
+        // move usher id to location (i,j)
+        let usher = this.ractive.get(`ushers.${id}`);
+        let isEmptySpace = this.ractive.get(`grid.${iNext}.${jNext}.isEmptySpace`);
+        if (usher.i === iNext && usher.j === jNext) {
+            console.log(`Usher ${id} has decided to not move`);
+        }
+        else if (iNext - usher.i > 1 || jNext - usher.j > 1) {
+            throw new Error(`Usher ${id} has submitted an invalid move`);
+        }
+        else if (isEmptySpace) {
+            let i = usher.i;
+            let j = usher.j;
+            this.ractive.set(`ushers.${id}.i`, iNext);
+            this.ractive.set(`ushers.${id}.j`, jNext);
+            this.ractive.set(`grid.${iNext}.${jNext}`, usher);
+            this.ractive.set(`grid.${i}.${j}`, new EmptySpace());
+            setTimeout(() => {
+                usher.doStep();
+            }, getMillisecondsForUsherMovement());
+        }
+        else if (!isEmptySpace && attempts < 3) {
+            setTimeout(() => {
+                this.moveUsher(id, iNext, jNext, attempts + 1);
+            });
+        }
+        else {
+            throw new Error(`Failed to move Usher ${id} to ${iNext}-${jNext}`);
+        }
+    }
+
+    lightCandle(keypathToPerson) {
+        let keypathToCandle = keypathToPerson + ".candle.isLit";
+        this.ractive.set(keypathToCandle, true);
     }
 }
 
