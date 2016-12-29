@@ -2,6 +2,11 @@
 // 1 - Clean up and refactor code to make it more readable and testable--this is a speed draft
 // 2 - Implement Grid Assessment mode for smarter usher navigation
 // 3 - Implement candle lighting algorithm so the ushers actually light the other candles
+// 4 - Review usherId implementation:  Set all timing parameters to 0 then repeatedly
+//      restart the simulation while ushers are near center.  You should see some of them
+//      seemingly teleport back to their starting positions with candle still lit.
+//      I suspect this has something to do with always using usherId==index in array.
+//      See if implementing a run-specific usherId fixes the bug.
 
 class Candle {
     constructor() {
