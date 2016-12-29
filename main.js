@@ -3,6 +3,8 @@ var argv = require('minimist')(process.argv.slice(2));
 var express = require('express');
 var app = express();
 
+const port = typeof argv.port !== "undefined" ? argv.port : 8080;
+
 app.set('view engine', 'pug');
 app.set('views', './views');
 
@@ -16,11 +18,11 @@ function commonGet(location, template) {
     });
 }
 
-commonGet('/', 'about_me');
+commonGet('/', 'candles');
 commonGet('/me', 'about_me');
 commonGet('/site', 'about_site');
 commonGet('/candles', 'candles');
 
-app.listen(argv.port, function() {
-    console.log(`App listening on port ${argv.port}`);
+app.listen(port, function() {
+    console.log(`App listening on port ${port}`);
 });

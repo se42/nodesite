@@ -4,71 +4,143 @@
             .panel-heading
                 .row
                     .col-sm-12
-                        h2 Simulation Control Panel
+                        h2 Control Panel
+                        p All parameters other than grid size are updated live.
             .panel-body
                 .row
                     form#control-panel
-                        .col-sm-3
+                        .col-sm-4
                             .form-group
-                                label(for="size") Size of Grid
-                                input.form-control#size(type="number" value="{{size}}" on-change="resetSimulation")
-                        .col-sm-3
+                                label(for="size") {{parameters.size.parameter_name}}
+                                input.form-control#size(
+                                    type="number"
+                                    value="{{size}}"
+                                    on-change="resetSimulation"
+                                    name="control-panel-parameter"
+                                    data-toggle="popover"
+                                    title="{{parameters.size.parameter_name}}"
+                                    data-content="{{parameters.size.description}}"
+                                )
+                        .col-sm-4
                             .form-group
-                                label(for="mode") Simulation Mode
-                                select.form-control#mode(value="{{selectedMode}}" on-change="resetSimulation")
-                                    | {{#each modes}}
-                                    option(value="{{this}}") {{display}}
-                                    | {{/each}}
-                        .col-sm-3
-                            .form-group
-                                label(for="global-speed") Global Speed
-                                select.form-control#global-speed(value="{{globalSpeed}}")
+                                label(for="global-speed") {{parameters.globalSpeed.parameter_name}}
+                                select.form-control#global-speed(
+                                    value="{{globalSpeed}}"
+                                    name="control-panel-parameter"
+                                    data-toggle="popover"
+                                    title="{{parameters.globalSpeed.parameter_name}}"
+                                    data-content="{{parameters.globalSpeed.description}}"
+                                )
                                     | {{#each globalSpeeds}}
                                     option(value="{{value}}") {{display}}
                                     | {{/each}}
+                        .col-sm-4
+                            .form-group
+                                label(for="mode") {{parameters.mode.parameter_name}}
+                                select.form-control#mode(
+                                    value="{{selectedMode}}"
+                                    name="control-panel-parameter"
+                                    data-toggle="popover"
+                                    title="{{parameters.mode.parameter_name}}"
+                                    data-content="{{parameters.mode.description}}"
+                                )
+                                    | {{#each modes}}
+                                    option(value="{{this}}") {{display}}
+                                    | {{/each}}
                 .row
-                    .col-sm-5.text-center
-                        p
-                            strong Time to Light Candle (seconds)
-                        .col-sm-6
+                    .col-sm-6.text-center
+                        .col-xs-12
+                            p
+                                strong Time to Light Candle (seconds)
+                        .col-xs-6
                             .form-group
-                                label(for="candle-seconds-min") Min
-                                input.form-control#candle-seconds-min(type="number" value="{{candleSecondsMin}}")
-                        .col-sm-6
+                                label(for="candle-seconds-min") {{parameters.candleSecondsMin.parameter_name}}
+                                input.form-control#candle-seconds-min(
+                                    type="number"
+                                    value="{{candleSecondsMin}}"
+                                    name="control-panel-parameter"
+                                    data-toggle="popover"
+                                    title="{{parameters.candleSecondsMin.parameter_name}}"
+                                    data-content="{{parameters.candleSecondsMin.description}}"
+                                )
+                        .col-xs-6
                             .form-group
-                                label(for="candle-seconds-max") Max
-                                input.form-control#candle-seconds-max(type="number" value="{{candleSecondsMax}}")
-                        .col-sm-6.col-sm-offset-3
+                                label(for="candle-seconds-max") {{parameters.candleSecondsMax.parameter_name}}
+                                input.form-control#candle-seconds-max(
+                                    type="number"
+                                    value="{{candleSecondsMax}}"
+                                    on-change="{{setCandleSecondsMax}}"
+                                    name="control-panel-parameter"
+                                    data-toggle="popover"
+                                    title="{{parameters.candleSecondsMax.parameter_name}}"
+                                    data-content="{{parameters.candleSecondsMax.description}}"
+                                )
+                        .col-xs-10.col-xs-offset-1.col-sm-6.col-sm-offset-3
                             .form-group
-                                button.btn.btn-primary.btn-block(on-click="resetCandleTiming") Defaults
-                    .col-sm-5.text-center
-                        p
-                            strong Reset Global Usher Movement Interval (seconds)
-                        .col-sm-6
+                                button.btn.btn-primary.btn-block(
+                                    on-click="resetCandleTiming"
+                                    name="control-panel-parameter"
+                                    data-toggle="popover"
+                                    title="Reset candle timing to defaults"
+                                    data-content="{{parameters.candleSecondsDefaults}}"
+                                ) Use Defaults
+                    .col-sm-6.text-center
+                        .col-xs-12
+                            p
+                                strong Global Usher Movement Interval (seconds)
+                        .col-xs-6
                             .form-group
-                                label(for="usher-seconds-min") Min
-                                input.form-control#usher-seconds-min(type="number" value="{{usherSecondsMin}}" on-change="setGlobalUsherMin")
-                        .col-sm-6
+                                label(for="usher-seconds-min") {{parameters.usherSecondsMin.parameter_name}}
+                                input.form-control#usher-seconds-min(
+                                    type="number"
+                                    value="{{usherSecondsMin}}"
+                                    on-change="setGlobalUsherMin"
+                                    name="control-panel-parameter"
+                                    data-toggle="popover"
+                                    title="{{parameters.usherSecondsMin.parameter_name}}"
+                                    data-content="{{parameters.usherSecondsMin.description}}"
+                                )
+                        .col-xs-6
                             .form-group
-                                label(for="usher-seconds-max") Max
-                                input.form-control#usher-seconds-max(type="number" value="{{usherSecondsMax}}" on-change="setGlobalUsherMax")
-                        .col-sm-6.col-sm-offset-3
+                                label(for="usher-seconds-max") {{parameters.usherSecondsMax.parameter_name}}
+                                input.form-control#usher-seconds-max(
+                                    type="number"
+                                    value="{{usherSecondsMax}}"
+                                    on-change="setGlobalUsherMax"
+                                    name="control-panel-parameter"
+                                    data-toggle="popover"
+                                    title="{{parameters.usherSecondsMax.parameter_name}}"
+                                    data-content="{{parameters.usherSecondsMax.description}}"
+                                )
+                        .col-xs-10.col-xs-offset-1.col-sm-6.col-sm-offset-3
                             .form-group
-                                button.btn.btn-primary.btn-block(on-click="resetGlobalUsherTiming") Defaults
+                                button.btn.btn-primary.btn-block(
+                                    on-click="resetGlobalUsherTiming"
+                                    name="control-panel-parameter"
+                                    data-toggle="popover"
+                                    title="Reset global usher speed to defaults"
+                                    data-content="{{parameters.usherSecondsDefaults}}"
+                                ) Use Defaults
             .panel-footer
                 .row
                     .col-sm-2
                         .form-group
-                            button.btn.btn-success.btn-block(on-click="resetSimulation") Restart
+                            button.btn.btn-success.btn-block(
+                                on-click="resetSimulation"
+                                name="control-panel-parameter"
+                                data-toggle="popover"
+                                data-content="Restart the simulation with the current settings."
+                            ) Restart
 .row
     .col-sm-12
-        | {{#each grid as row}}
-        | {{#each row}}
-        | {{#if candle.isLit}}
-        i(class="{{repr}}" aria-hidden="true" lit)
-        | {{else}}
-        i(class="{{repr}}" aria-hidden="true")
-        | {{/if}}
-        | {{/each}}
-        br
-        | {{/each}}
+        .room
+            | {{#each grid as row}}
+            | {{#each row}}
+            | {{#if candle.isLit}}
+            i(class="{{repr}} lit" aria-hidden="true")
+            | {{else}}
+            i(class="{{repr}}" aria-hidden="true")
+            | {{/if}}
+            | {{/each}}
+            br
+            | {{/each}}

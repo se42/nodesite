@@ -6,8 +6,16 @@ class Candle {
         this.isLit = false;
     }
 }
-Candle.defaultSecondsToLightMin = 3.0;
-Candle.defaultSecondsToLightMax = 5.0;
+Candle.candleSecondsMin = {
+    parameter_name: "Minimum",
+    description: "Minimum time in seconds that it should take to light a candle.",
+    default: 3,
+};
+Candle.candleSecondsMax = {
+    parameter_name: "Maximum",
+    description: "Maximum time in seconds that it should take to light a candle.",
+    default: 5,
+};
 
 class AbstractGridLocation {
     constructor(i, j, center) {
@@ -64,8 +72,8 @@ class Usher extends AbstractGridLocation {
         this.origin = {i: i, j: j};
         this.isMobile = true;
         this.patience = 0;
-        this.movementMinSeconds = Usher.defaultMovementMinSeconds;
-        this.movementMaxSeconds = Usher.defaultMovementMaxSeconds;
+        this.movementMinSeconds = Usher.usherSecondsMin.default;
+        this.movementMaxSeconds = Usher.usherSecondsMax.default;
     }
 
     doStep() {
@@ -146,6 +154,8 @@ class Usher extends AbstractGridLocation {
 
     assessGrid(iTarget, jTarget) {
         let grid = this.getAttr("grid");
+        console.log(`Usher ${this.id} is now in Grid Assessment mode`);
+        throw new Error("Mode not implemented");
     }
 
     doNextMove(iTarget, jTarget) {
@@ -229,8 +239,16 @@ class Usher extends AbstractGridLocation {
         }
     }
 }
-Usher.defaultMovementMinSeconds = 0.5;
-Usher.defaultMovementMaxSeconds = 1.5;
+Usher.usherSecondsMin = {
+    parameter_name: "Minimum",
+    description: "Global minimum value for interval between an usher's movements.",
+    default: 0.5,
+};
+Usher.usherSecondsMax = {
+    parameter_name: "Maximum",
+    description: "Global maximum value for interval between an usher's movements.",
+    default: 1.5,
+};
 
 
 class SeatingGrid {
@@ -294,24 +312,26 @@ class SeatingGrid {
 }
 SeatingGrid.frontRowLength = 7;
 SeatingGrid.minimumSize = SeatingGrid.frontRowLength + 2;
+SeatingGrid.size = {
+    parameter_name: "Seating Grid Size",
+    description: "Sets the size of the N x N square layout.  Must be odd number >= 9.",
+    default: 25,
+};
 
 
 class SimulationRunner {
     constructor() {
-        let defaultSize = 15;
-        let defaultMode = "oneBlindMove";
-
         this.ractive = new Ractive({
             el: "#candles-visualization",
             template: "#candles-template",
             data: {
-                size: defaultSize,
-                selectedMode: defaultMode,
-                globalSpeed: 1,
-                candleSecondsMin: Candle.defaultSecondsToLightMin,
-                candleSecondsMax: Candle.defaultSecondsToLightMax,
-                usherSecondsMin: Usher.defaultMovementMinSeconds,
-                usherSecondsMax: Usher.defaultMovementMaxSeconds,
+                size: SeatingGrid.size.default,
+                selectedMode: SimulationRunner.mode.default,
+                globalSpeed: SimulationRunner.globalSpeed.default,
+                candleSecondsMin: Candle.candleSecondsMin.default,
+                candleSecondsMax: Candle.candleSecondsMax.default,
+                usherSecondsMin: Usher.usherSecondsMin.default,
+                usherSecondsMax: Usher.usherSecondsMax.default,
             },
             computed: {
                 center: 'Math.floor(${size}/2)',
@@ -326,11 +346,11 @@ class SimulationRunner {
         });
 
         this.ractive.on('resetGlobalUsherTiming', (event) => {
-            this.ractive.set("usherSecondsMin", Usher.defaultMovementMinSeconds);
-            this.ractive.set("usherSecondsMax", Usher.defaultMovementMaxSeconds);
+            this.ractive.set("usherSecondsMin", Usher.usherSecondsMin.default);
+            this.ractive.set("usherSecondsMax", Usher.usherSecondsMax.default);
             this.ractive.get("ushers").forEach((usher) => {
-                this.ractive.set(`ushers.${usher.id}.movementMinSeconds`, Usher.defaultMovementMinSeconds);
-                this.ractive.set(`ushers.${usher.id}.movementMaxSeconds`, Usher.defaultMovementMaxSeconds);
+                this.ractive.set(`ushers.${usher.id}.movementMinSeconds`, Usher.usherSecondsMin.default);
+                this.ractive.set(`ushers.${usher.id}.movementMaxSeconds`, Usher.usherSecondsMax.default);
             });
         });
 
@@ -349,8 +369,8 @@ class SimulationRunner {
         });
 
         this.ractive.on('resetCandleTiming', (event) => {
-            this.ractive.set("candleSecondsMin", Candle.defaultSecondsToLightMin);
-            this.ractive.set("candleSecondsMax", Candle.defaultSecondsToLightMax);
+            this.ractive.set("candleSecondsMin", Candle.candleSecondsMin.default);
+            this.ractive.set("candleSecondsMax", Candle.candleSecondsMax.default);
         });
 
         this.newSimulation();
@@ -381,6 +401,9 @@ class SimulationRunner {
         // an odd number has % 2 == 1; add !(1) which is 0 to leave it alone
         // an even number has % 2 == 0; add !(0) which is 1 to make it odd
         let size = requestedSize + !(requestedSize % 2);
+        if (size < SeatingGrid.minimumSize) {
+            size = SeatingGrid.minimumSize;
+        }
         let seatingGrid = new SeatingGrid(size);
 
         this.ractive.reset({
@@ -397,6 +420,20 @@ class SimulationRunner {
             candleSecondsMax: candleSecondsMax,
             usherSecondsMin: usherSecondsMin,
             usherSecondsMax: usherSecondsMax,
+            parameters: {
+                // These are the *default* objects from class definitions
+                // used to create the popovers on the control panel.
+                // Top level attributes set the actual values being used.
+                size: SeatingGrid.size,
+                globalSpeed: SimulationRunner.globalSpeed,
+                mode: SimulationRunner.mode,
+                candleSecondsMin: Candle.candleSecondsMin,
+                candleSecondsMax: Candle.candleSecondsMax,
+                candleSecondsDefaults: `Min: ${Candle.candleSecondsMin.default} seconds\nMax: ${Candle.candleSecondsMax.default} seconds`,
+                usherSecondsMin: Usher.usherSecondsMin,
+                usherSecondsMax: Usher.usherSecondsMax,
+                usherSecondsDefaults: `Min: ${Usher.usherSecondsMin.default} seconds\nMax: ${Usher.usherSecondsMax.default} seconds`,
+            }
         })
         let center = this.ractive.get("center");
         for (let i = 0; i < size; i += center) {
@@ -499,5 +536,22 @@ class SimulationRunner {
         return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 }
+SimulationRunner.mode = {
+    parameter_name: "Simulation Mode",
+    description: "Sets the algorithm used to drive the simulation.",
+    default: "oneBlindMove",
+};
+SimulationRunner.globalSpeed = {
+    parameter_name: "Global Speed",
+    description: "Increase this to make the entire simulation run faster.",
+    default: 1,
+};
 
 new SimulationRunner();
+
+
+$("[name='control-panel-parameter']").popover({
+    placement: "auto",
+    trigger: "hover focus",
+});
+
