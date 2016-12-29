@@ -1,5 +1,7 @@
-
-
+// TODO LIST:
+// 1 - Clean up and refactor code to make it more readable and testable--this is a speed draft
+// 2 - Implement Grid Assessment mode for smarter usher navigation
+// 3 - Implement candle lighting algorithm so the ushers actually light the other candles
 
 class Candle {
     constructor() {
@@ -312,9 +314,11 @@ class SeatingGrid {
 }
 SeatingGrid.frontRowLength = 7;
 SeatingGrid.minimumSize = SeatingGrid.frontRowLength + 2;
+SeatingGrid.maximumSize = 101;
 SeatingGrid.size = {
     parameter_name: "Seating Grid Size",
-    description: "Sets the size of the N x N square layout.  Must be odd number >= 9.",
+    description: "Sets the size N of the N x N square layout.  "+
+        "9 <= N <= 101",
     default: 25,
 };
 
@@ -322,7 +326,7 @@ SeatingGrid.size = {
 class SimulationRunner {
     constructor() {
         this.ractive = new Ractive({
-            el: "#candles-visualization",
+            el: "#candles-simulation",
             template: "#candles-template",
             data: {
                 size: SeatingGrid.size.default,
@@ -404,6 +408,9 @@ class SimulationRunner {
         if (size < SeatingGrid.minimumSize) {
             size = SeatingGrid.minimumSize;
         }
+        else if (size > SeatingGrid.maximumSize) {
+            size = SeatingGrid.maximumSize;
+        }
         let seatingGrid = new SeatingGrid(size);
 
         this.ractive.reset({
@@ -429,10 +436,10 @@ class SimulationRunner {
                 mode: SimulationRunner.mode,
                 candleSecondsMin: Candle.candleSecondsMin,
                 candleSecondsMax: Candle.candleSecondsMax,
-                candleSecondsDefaults: `Min: ${Candle.candleSecondsMin.default} seconds\nMax: ${Candle.candleSecondsMax.default} seconds`,
+                candleSecondsDefaults: `Min: ${Candle.candleSecondsMin.default} | Max: ${Candle.candleSecondsMax.default}`,
                 usherSecondsMin: Usher.usherSecondsMin,
                 usherSecondsMax: Usher.usherSecondsMax,
-                usherSecondsDefaults: `Min: ${Usher.usherSecondsMin.default} seconds\nMax: ${Usher.usherSecondsMax.default} seconds`,
+                usherSecondsDefaults: `Min: ${Usher.usherSecondsMin.default} | Max: ${Usher.usherSecondsMax.default}`,
             }
         })
         let center = this.ractive.get("center");

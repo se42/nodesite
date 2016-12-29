@@ -2,39 +2,222 @@ extends base
 
 block content
     .row
-        .col-xs-12
-            h1 Candle Lighting Simulation
-            p Code available on
-                a(href="https://github.com/se42/nodesite/blob/develop/public/js/candles.js")  my Github
-                | .  Link is to relevant js file at time of writing.
-            hr
+        .col-sm-12
             script#candles-template(type="text/ractive")
                 include candles-template
-            #candles-visualization
+            #candles-simulation
             hr
     .row
         .col-xs-12
-            p TODO:
-            ul
-                li Write up first publishable draft of this page
-                li Build out Grid Assessment mode
-                li Review and clean up code where possible -- be sure the terminology/presentation is clear
-                li Write up first publishable draft of about_site page
-            h1 So what is this?
-            ul
-                li Pug/Ractive integration
-                li Reminder that taking the time to really read the docs is always a good decision
-                li Fun to do a project from scratch and run into problems that I've been using
-                    |  the solutions to without even knowing it
-                li Also fun to get to wire together my own stack--I'm learning how nice it is
-                    |  to be able to wire up a few unopinionated libraries, but you simply have
-                    |  to read the docs!  A really good framework can be nice (e.g. Django)
-                    |  but is really hard to do.
-                li Yet ANOTHER reminder that anything called magic mode is usually
-                    |  NOT what I'm looking for
-            ul
-                li "One Blind Move" method has a tendency to get stuck but will occasionally work out of a jam
-                li Introducing the pause for candle lighting <i>really</i> messes with the one blind move algorithm as the other ushers just pile into the surrounding blocks leading <strong>most</strong> runs to deadlock
+            h2 So what is this?
+            p.lead
+                | This is a simulation of a Christmas Eve candle lighting ceremony
+                | implemented using  
+                a(href="http://www.ractivejs.org/" target="_blank") Ractive.js
+                | .
+            p.
+                Our Christmas Eve ceremony always ends by turning off the lights
+                and systematically lighting candles that everyone is holding.
+                Starting with a single candle in the center of the room, a
+                group of ushers walk the aisles and the flames are passed through
+                the room until all of the candles are lit. This system struck
+                me as a good scenario to model for my first simulation, and
+                this page is what I came up with.
+            h2 Where is the code?
+            p Relevant 
+                a(
+                    href="https://github.com/se42/nodesite/blob/develop/public/js/candles.js"
+                    target="_blank"
+                ) JavaScript
+                |  and 
+                a(
+                    href="https://github.com/se42/nodesite/blob/develop/views/candles-template.pug"
+                    target="_blank"
+                ) Ractive/Pug template
+                |  available on 
+                a(
+                    href="https://github.com/se42/"
+                    target="_blank"
+                ) my Github
+                | .
+
+            h2.
+                Tell me about the different simulation modes
+            p.lead One Blind Move will almost always fail with realistic candle lighting times
+            p.
+                The One Blind Move method was the first navigation method that
+                I developed for this simulation, and it's not very good.  The
+                goal of this algorithm was simply to develop a method that would
+                allow all individual ushers to navigate to the candle-lighting
+                target, light their candles, and then navigate back to their
+                original positions.  It accomplishes this goal, and will occasionally
+                succeed when all 8 ushers are run simultaneously under friendly
+                conditions, but more often than not the ushers end up deadlocked
+                at the center of the grid with all ushers electing to not move
+                because they cannot get closer to their target.
+            p.
+                Introducing the Time to Light Candle parameter really killed this
+                algorithm as the first usher to reach the center candle will
+                sit there for a few seconds while the other ushers pile into
+                the center of the grid.  By the time the first usher's candle
+                is lit, there is nowhere to go and the simulation will stall.
+            p.
+                To make this algorithm succeed every time, set both the min and
+                max values for both the candle lighting and usher movement
+                parameters to 0.  This makes the simulation deterministic, and
+                it will suceed in exactly the same manner every time.  The 0
+                values will still be fed into a setTimeout, delaying each usher's
+                next move to the next turn of the event loop (otherwise the
+                simulation would proceed one usher at a time), but apparently
+                the movements work out.
+            p.
+                This algorithm will occasionally succeed in a more stochastic
+                environment, but not often.  If you set the candle timing min
+                and max values to 0 and 0.1, respectively, and use the default
+                usher movement values of 0.5 and 1.5, you should eventually
+                observe a successful run.  Set the global speed to 8x or you
+                may be here a while though.
+
+            p.lead Grid Assessment will be much smarter when it is implemented
+            p.
+                The Grid Assessment mode will have ushers assess the full state
+                of the grid before deciding where (or if) to move.  Each usher
+                will use a path planning algorithm that basically considers the
+                target location as the "lowest energy" location, considers other
+                ushers as "high energy" locations, and attempts to move to the
+                next grid location of lowest energy until it arrives at the
+                target location.  Theoretically, switching to this mode after
+                observing a deadlock in the One Blind Move mode should cause the
+                ushers to back off by a square or too, thus allowing the stuck
+                usher to move on towards its final destination.
+
+            h2 What technology is being used here?
+            p.lead
+                | The core technology that is driving this simulation is 
+                a(href="http://www.ractivejs.org/" target="_blank") Ractive.js
+                | .
+            p.
+                Ractive is a reactive templating library that implements the same
+                two-way data binding that makes big frameworks like Angular
+                so cool, but Ractive is a much simpler unopinionated library
+                which makes it perfect for my use case as I didn't want a full
+                blown Angular or React application.  I was already using Pug (Jade)
+                for my static templates, so once I figured out how to make Pug
+                and Ractive's Mustache templating play nice together I was set.
+            p.
+                Beyond that, it's basically just plain JavaScript.
+
+            h2.
+                What were some of the biggest challenges?
+            p.lead
+                | It was smooth sailing after I turned off 
+                a(href="http://docs.ractivejs.org/latest/magic-mode" target="_blank") Magic Mode
+                | .
+            p.
+                Ractive has an option called Magic Mode that sounds awesome when
+                you first read about it, so of course I turned it on.  Basically,
+                Magic Mode makes it so you don't have to use the Ractive API to
+                update your Ractive object.  Whenever you access a piece of data
+                that Ractive "knows" about using standard object.attribute notation,
+                Ractive intercepts those get/set operations using the object's
+                accessor functions.
+            p.
+                Sounds great, right?  You can use Ractive without even bothering to
+                learn how it works.  Not.  I'm not entirely sure if my design is just
+                incompatible with Magic Mode or if this type of simulation problem
+                is not a good match for Magic Mode, but with Magic Mode turned on
+                I get all kinds of buggy behavior once the ushers are in the same
+                area of the grid.  Generally speaking the UI starts to duplicate
+                ushers, and the isLit attribute is not stable after being "lit."
+            p.
+                To address this schizophrenic behavior I first changed my design
+                to use a single SimulationRunner object that would hold the Ractive
+                instance so that I <i>knew</i> there was only one object feeding
+                data to the UI.  The old design had each usher instance holding a
+                this.ractive attribute, which I <i>hoped</i> was a reference to
+                the same object, but I didn't know this for sure so I used the
+                SimulationRunner to eliminate this potential issue.  (NOTE:  The
+                schizophrenic behavior still occurs if I turn on Magic Mode, so
+                I at least know this old design wasn't the <i>only</i> problem.)
+            p.
+                The second thing I did was to simply turn off Magic Mode so that
+                I had complete control over my interactions with the Ractive
+                object.  I'm not sure if it's something about my coding style or
+                if it's just the way my brain works, but I never seem to have much
+                luck with tools that claim to be magical.  I'm sure Magic Mode
+                works like a charm for what it was designed to do, but that's the
+                problem:  you still have to understand what it was designed to do
+                and how it works to avoid automagically creating <i>different</i>,
+                sometimes <i>magical</i> bugs.
+            p.
+                Finally, when I wanted to implement a simulation reset feature I
+                was faced with a similar problem:  the ushers were carrying state
+                from the previous run into the new run, leading to more schizophrenic
+                behavior vis-a-vis location and candle.isLit status.  To fix this,
+                I hold an array of the active usher objects on the SimulationRunner.
+                When the simulation is reset, the SimulationRunner iterates through
+                this list and sets the this.runner attribute on each usher to null.
+                The next time the usher tries to "phone in" a change to the runner,
+                it finds a null object and throws an error.  The SimulationRunner
+                always initiates usher steps by calling the same doStep method, so
+                by labeling this code block as the main_loop, catching any errors
+                that bubble up, and then breaking the main_loop, the program is
+                able to gracefully kill off old ushers when they find that their
+                runner has been set to null.  This does have the effect of swallowing
+                errors that I may need to see in development, but this is easy to
+                fix with a console.error statement that can be removed later.
+            p
+                | So to sum it all up, the two lessons that were reinforced for
+                | me during this project were that:
+                ol
+                    li
+                        | It always pays to take the time to actually read the
+                        | documentation of a new tool before <i>really</i> starting
+                        | to use it.
+                    li
+                        | Things called Magic Mode are usually not what I'm looking for.
+            p.lead.
+                Or, read the docs and don't try to take shortcuts.
+            
+            h2.
+                What else did I learn from doing this project?
+            p.lead.
+                I'm learning a lot just by working in a professional development environment.
+            p.
+                The first thing that struck me about doing this project from scratch
+                was how obvious it was that I've come to rely on some well-designed
+                systems at work that let us do <i>a lot</i> of things very efficiently.
+                Little things like having a well-organized directory structure, automated
+                build tools, established Git workflows, and known packages already
+                working well together drastically speed up the development process.
+            p.
+                Starting from scratch was a challenge because literally none of those
+                things were in place.  I had to set up my own Node server, then I had
+                to rewrite it using Express, then I had to install and configure Less
+                and set up scripts to compile it and put my JavaScript where it needs
+                to be--in three different environments.
+            p.lead.
+                But the cool part of this was that every time I came up against
+                a new challenge, or had to learn how to use a new package or library,
+                it seemed like I kind of already knew the answer because I had
+                seen the problem solved at work without necessarily knowing it.
+            p.
+                Need to configure Nginx for both local and dev/production server
+                cases so your app can more or less run the same way (e.g. behind
+                an Nginx reverse proxy) regardless of where it's running?  We do
+                that at work all the time.  Need to have automated build scripts
+                to compile your Less files and put your static files where Nginx
+                will look for them?  We do that all the time too.
+            p.
+                On top of specific technical challenges, little things like always
+                being mindful of how your code is organized, how you're naming your
+                variables, adhering to DRY principles even when it gets tricky, and
+                feeling comfortable working with large code bases that can't be
+                understood from top to bottom (meaning you <i>have</i> to break it
+                down into functions) are all things I've learned and become comfortable
+                with during a short 4 months of professional work.
+            p.lead.
+                Breaking News:  Working around smart people is good for you.
 
 block scripts-foot
     script(src="js/candles.js")
