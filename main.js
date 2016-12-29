@@ -16,7 +16,7 @@ function commonGet(location, template) {
     });
 }
 
-commonGet('/', 'about_me');
+commonGet('/', 'candles');
 commonGet('/me', 'about_me');
 commonGet('/site', 'about_site');
 commonGet('/candles', 'candles');
