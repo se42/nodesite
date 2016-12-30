@@ -1,7 +1,5 @@
 // TODO LIST:
 // 1 - Clean up and refactor code to make it more readable and testable--this is a speed draft
-//      --> Look through Underscore library for low hanging cleanup fruit
-//      --> Get ractive (and other dependencies?) from npm
 // 2 - Implement Grid Assessment mode for smarter usher navigation
 // 3 - Implement candle lighting algorithm so the ushers actually light the other candles
 
@@ -98,26 +96,26 @@ class Usher extends AbstractGridLocation {
     }
 
     getMe() {
-        if (typeof this.runner !== "undefined") {
-            return this.runner.ractive.get(`ushers.${this.id}`);
+        if (_.isUndefined(this.runner)) {
+            throw new Error(`Usher ${this.id} accessed undefined runner in getMe`);
         }
         else {
-            throw new Error(`Usher ${this.id} accessed undefined runner in getMe`);
+            return this.runner.ractive.get(`ushers.${this.id}`);
         }
     }
 
     getAttr(attr) {
-        if (typeof this.runner !== "undefined") {
-            return this.runner.ractive.get(attr);
+        if (_.isUndefined(this.runner)) {
+            throw new Error(`Usher ${this.id} accessed undefined runner in getAttr (${attr})`);
         }
         else {
-            throw new Error(`Usher ${this.id} accessed undefined runner in getAttr (${attr})`);
+            return this.runner.ractive.get(attr);
         }
     }
 
     lightCandle() {
         if (this.getMe().isUsherAtCenterCandle()){
-            // runner assumed not undefined if getMe() worked
+            // runner assumed to exist if getMe() worked
             this.runner.lightCandle(`ushers.${this.id}`, this.id);
         }
         else {
@@ -233,12 +231,12 @@ class Usher extends AbstractGridLocation {
     }
 
     move(iNext, jNext) {
-        if (typeof this.runner !== "undefined") {
-            this.runner.moveUsher(this.id, iNext, jNext);
-            this.patience = 0;
+        if (_.isUndefined(this.runner)) {
+            throw new Error(`Usher ${this.id} accessed undefined runner during move attempt`);
         }
         else {
-            throw new Error(`Usher ${this.id} accessed undefined runner during move attempt`);
+            this.runner.moveUsher(this.id, iNext, jNext);
+            this.patience = 0;
         }
     }
 }
@@ -347,7 +345,7 @@ class SimulationRunner {
         })
 
         this.ractive.on('resetSimulation', (event) => {
-            Object.keys(this.ractive.get("ushers")).forEach((usherId) => {
+            _.keys(this.ractive.get("ushers")).forEach((usherId) => {
                 // detach old ushers from SimulationRunner
                 this.ractive.set(`ushers.${usherId}.candle`, undefined);
                 this.ractive.set(`ushers.${usherId}.runner`, undefined);
@@ -360,7 +358,7 @@ class SimulationRunner {
         this.ractive.on('resetGlobalUsherTiming', (event) => {
             this.ractive.set("usherSecondsMin", Usher.usherSecondsMin.default);
             this.ractive.set("usherSecondsMax", Usher.usherSecondsMax.default);
-            Object.keys(this.ractive.get("ushers")).forEach((usherId) => {
+            _.keys(this.ractive.get("ushers")).forEach((usherId) => {
                 this.ractive.set(`ushers.${usherId}.movementMinSeconds`, Usher.usherSecondsMin.default);
                 this.ractive.set(`ushers.${usherId}.movementMaxSeconds`, Usher.usherSecondsMax.default);
             });
@@ -368,14 +366,14 @@ class SimulationRunner {
 
         this.ractive.on('setGlobalUsherMin', (event) => {
             let min = this.ractive.get("usherSecondsMin");
-            Object.keys(this.ractive.get("ushers")).forEach((usherId) => {
+            _.keys(this.ractive.get("ushers")).forEach((usherId) => {
                 this.ractive.set(`ushers.${usherId}.movementMinSeconds`, min);
             });
         });
 
         this.ractive.on('setGlobalUsherMax', (event) => {
             let max = this.ractive.get("usherSecondsMax");
-            Object.keys(this.ractive.get("ushers")).forEach((usherId) => {
+            _.keys(this.ractive.get("ushers")).forEach((usherId) => {
                 this.ractive.set(`ushers.${usherId}.movementMaxSeconds`, max);
             });
         });
@@ -456,7 +454,7 @@ class SimulationRunner {
         for (let i = 0; i < size; i += center) {
             for (let j = 0; j < size; j += center) {
                 if (!(i === center && j === center)) {
-                    let id = 10 * this.runId + Object.keys(this.ractive.get("ushers")).length;
+                    let id = 10 * this.runId + _.keys(this.ractive.get("ushers")).length;
                     let usher = new Usher(i, j, id, this);
                     this.ractive.set(`ushers.${id}`, usher);
                     this.ractive.set(`grid.${i}.${j}`, usher);
@@ -471,7 +469,7 @@ class SimulationRunner {
     }
 
     run() {
-        Object.keys(this.ractive.get("ushers")).forEach((usherId) => {
+        _.shuffle(_.keys(this.ractive.get("ushers"))).forEach((usherId) => {
             let usher = this.ractive.get(`ushers.${usherId}`);
             setTimeout(() => {
                 usher.doStep();
@@ -482,17 +480,17 @@ class SimulationRunner {
     doNextStep(usherId) {
         setTimeout(() => {
             let usher = this.ractive.get(`ushers.${usherId}`);
-            if (typeof usher !== "undefined" && typeof usher.doStep !== "undefined") {
+            if (_.isObject(usher) && _.isFunction(usher.doStep)) {
                 try {
                     usher.doStep();
                 }
                 catch (e) {
-                    // This should never execute but the 2 undefined checks
-                    // are needed as there seems to be some delay/mistiming
-                    // in the undefining and garbage collection of the usher
-                    // objects.  Without the doStep !== "undefined" check
-                    // the following console.log(usher) will sometimes log
-                    // an object with only the remnants of a candle.
+                    // This should never execute but the 2 checks are
+                    // needed as there seems to be some delay/mistiming
+                    // in the un-defining and garbage collection of the
+                    // usher objects.  Without the _.isFunction(usher.doStep))
+                    // check the following console.log(usher) will sometimes
+                    // log an object with only the remnants of a candle.
                     console.error(e);
                     console.log(usher);
                 }
@@ -550,7 +548,7 @@ class SimulationRunner {
         let globalSpeed = this.ractive.get("globalSpeed");
         let movementMillisecondsMin = Number(this.ractive.get(`ushers.${usherId}.movementMinSeconds`)) * 1000;
         let movementMillisecondsMax = Number(this.ractive.get(`ushers.${usherId}.movementMaxSeconds`)) * 1000;
-        let interval = SimulationRunner.getRandomIntInclusive(movementMillisecondsMin, movementMillisecondsMax);
+        let interval = _.random(movementMillisecondsMin, movementMillisecondsMax);
         return interval / globalSpeed;
     }
 
@@ -558,15 +556,8 @@ class SimulationRunner {
         let globalSpeed = this.ractive.get("globalSpeed");
         let candleMillisecondsMin = Number(this.ractive.get("candleSecondsMin")) * 1000;
         let candleMillisecondsMax = Number(this.ractive.get("candleSecondsMax")) * 1000;
-        let interval = SimulationRunner.getRandomIntInclusive(candleMillisecondsMin, candleMillisecondsMax);
+        let interval = _.random(candleMillisecondsMin, candleMillisecondsMax);
         return interval / globalSpeed;
-    }
-
-    static getRandomIntInclusive(min, max) {
-        // copied this straight off the MDN page for Math.random
-        min = Math.ceil(min);
-        max = Math.floor(max);
-        return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 }
 SimulationRunner.mode = {

@@ -70,6 +70,14 @@ block content
                 next move to the next turn of the event loop (otherwise the
                 simulation would proceed one usher at a time), but apparently
                 the movements work out.
+            blockquote
+                p.
+                    EDIT:  Setting all of the timing values to 0 doesn't guarantee
+                    success anymore, but it does help.  I added a shuffle function
+                    to the initial run call, so now the ushers don't always start
+                    in the same order which means there is always a stochastic
+                    element to the simulation, event if all of the movements and
+                    events are instantaneous.
             p.
                 This algorithm will occasionally succeed in a more stochastic
                 environment, but not often.  If you set the candle timing min

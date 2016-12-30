@@ -1,4 +1,9 @@
-lessc /home/Scott/dev_scottmedwards_app/public/less/main.less /var/www/dev_scottmedwards_app/css/main.css
-cp /home/Scott/dev_scottmedwards_app/public/img/* /var/www/dev_scottmedwards_app/img/
-cp /home/Scott/dev_scottmedwards_app/public/js/* /var/www/dev_scottmedwards_app/js/
-cp /home/Scott/dev_scottmedwards_app/public/favicon.ico /var/www/dev_scottmedwards_app/favicon.ico
+APP_DIR=/home/Scott/dev_scottmedwards_app
+WEB_DIR=/var/www/dev_scottmedwards_app
+
+lessc $APP_DIR/public/less/main.less $WEB_DIR/css/main.css
+
+cp $APP_DIR/node_modules/underscore/underscore-min.js $WEB_DIR/js/
+cp $APP_DIR/public/img/* $WEB_DIR/img/
+cp $APP_DIR/public/js/* $WEB_DIR/js/
+cp $APP_DIR/public/favicon.ico $WEB_DIR/favicon.ico

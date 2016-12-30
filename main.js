@@ -1,9 +1,10 @@
-var path = require('path');
-var argv = require('minimist')(process.argv.slice(2));
-var express = require('express');
-var app = express();
+const argv = require('minimist')(process.argv.slice(2));
+const express = require('express');
+const _ = require('underscore');
 
-const port = typeof argv.port !== "undefined" ? argv.port : 8080;
+let app = express();
+
+const port = !_.isUndefined(argv.port) ? argv.port : 8080;
 
 app.set('view engine', 'pug');
 app.set('views', './views');
