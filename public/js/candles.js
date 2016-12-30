@@ -2,11 +2,6 @@
 // 1 - Clean up and refactor code to make it more readable and testable--this is a speed draft
 // 2 - Implement Grid Assessment mode for smarter usher navigation
 // 3 - Implement candle lighting algorithm so the ushers actually light the other candles
-// 4 - Review usherId implementation:  Set all timing parameters to 0 then repeatedly
-//      restart the simulation while ushers are near center.  You should see some of them
-//      seemingly teleport back to their starting positions with candle still lit.
-//      I suspect this has something to do with always using usherId==index in array.
-//      See if implementing a run-specific usherId fixes the bug.
 
 class Candle {
     constructor() {
@@ -26,7 +21,7 @@ Candle.candleSecondsMax = {
 
 class AbstractGridLocation {
     constructor(i, j, center) {
-        this.repr = "fa fa-fw " + AbstractGridLocation.getRotationForPosition(i,j,center);
+        this.repr = "fa fa-fw" + AbstractGridLocation.getRotationForPosition(i,j,center);
         this.i = i;
         this.j = j;
         this.isEmptySpace = false;
@@ -35,21 +30,21 @@ class AbstractGridLocation {
 
     static getRotationForPosition(i, j, center) {
         if (!center) {
-            return;
+            return "";
         }
         let iDelta = Math.abs(i - center);
         let jDelta = Math.abs(j - center);
         if (i < center && jDelta < iDelta) {
-            return;
+            return "";
         }
         else if (j > center && iDelta < jDelta) {
-            return "fa-rotate-90";
+            return " fa-rotate-90";
         }
         else if (i > center && jDelta < iDelta) {
-            return "fa-rotate-180";
+            return " fa-rotate-180";
         }
         else if (j < center && iDelta < jDelta) {
-            return "fa-rotate-270";
+            return " fa-rotate-270";
         }
     }
 }
@@ -101,28 +96,27 @@ class Usher extends AbstractGridLocation {
     }
 
     getMe() {
-        if (this.runner !== null) {
+        if (typeof this.runner !== "undefined") {
             return this.runner.ractive.get(`ushers.${this.id}`);
         }
         else {
-            throw new Error(`Usher ${this.id} accessed null runner in getMe`);
+            throw new Error(`Usher ${this.id} accessed undefined runner in getMe`);
         }
     }
 
     getAttr(attr) {
-        if (this.runner !== null) {
+        if (typeof this.runner !== "undefined") {
             return this.runner.ractive.get(attr);
         }
         else {
-            throw new Error(`Usher ${this.id} accessed null runner in getAttr (${attr})`);
+            throw new Error(`Usher ${this.id} accessed undefined runner in getAttr (${attr})`);
         }
     }
 
     lightCandle() {
         if (this.getMe().isUsherAtCenterCandle()){
-            // runner assumed not null if getMe() worked
+            // runner assumed not undefined if getMe() worked
             this.runner.lightCandle(`ushers.${this.id}`, this.id);
-            // this.doStep();
         }
         else {
             let center = this.getAttr("center");
@@ -237,12 +231,12 @@ class Usher extends AbstractGridLocation {
     }
 
     move(iNext, jNext) {
-        if (this.runner !== null) {
+        if (typeof this.runner !== "undefined") {
             this.runner.moveUsher(this.id, iNext, jNext);
             this.patience = 0;
         }
         else {
-            throw new Error(`Usher ${this.id} accessed null runner during move attempt`);
+            throw new Error(`Usher ${this.id} accessed undefined runner during move attempt`);
         }
     }
 }
@@ -330,6 +324,9 @@ SeatingGrid.size = {
 
 class SimulationRunner {
     constructor() {
+        this.runId = 0;
+
+        // Ractive configuration
         this.ractive = new Ractive({
             el: "#candles-simulation",
             template: "#candles-template",
@@ -348,8 +345,12 @@ class SimulationRunner {
         })
 
         this.ractive.on('resetSimulation', (event) => {
-            this.ractive.get("ushers").forEach((usher) => {
-                usher.runner = null; // don't let old ushers access new grid
+            Object.keys(this.ractive.get("ushers")).forEach((usherId) => {
+                // detach old ushers from SimulationRunner
+                this.ractive.set(`ushers.${usherId}.candle`, undefined);
+                this.ractive.set(`ushers.${usherId}.runner`, undefined);
+                this.ractive.set(`ushers.${usherId}`, undefined);
+
             });
             this.newSimulation();
         });
@@ -357,23 +358,23 @@ class SimulationRunner {
         this.ractive.on('resetGlobalUsherTiming', (event) => {
             this.ractive.set("usherSecondsMin", Usher.usherSecondsMin.default);
             this.ractive.set("usherSecondsMax", Usher.usherSecondsMax.default);
-            this.ractive.get("ushers").forEach((usher) => {
-                this.ractive.set(`ushers.${usher.id}.movementMinSeconds`, Usher.usherSecondsMin.default);
-                this.ractive.set(`ushers.${usher.id}.movementMaxSeconds`, Usher.usherSecondsMax.default);
+            Object.keys(this.ractive.get("ushers")).forEach((usherId) => {
+                this.ractive.set(`ushers.${usherId}.movementMinSeconds`, Usher.usherSecondsMin.default);
+                this.ractive.set(`ushers.${usherId}.movementMaxSeconds`, Usher.usherSecondsMax.default);
             });
         });
 
         this.ractive.on('setGlobalUsherMin', (event) => {
             let min = this.ractive.get("usherSecondsMin");
-            this.ractive.get("ushers").forEach((usher) => {
-                this.ractive.set(`ushers.${usher.id}.movementMinSeconds`, min);
+            Object.keys(this.ractive.get("ushers")).forEach((usherId) => {
+                this.ractive.set(`ushers.${usherId}.movementMinSeconds`, min);
             });
         });
 
         this.ractive.on('setGlobalUsherMax', (event) => {
             let max = this.ractive.get("usherSecondsMax");
-            this.ractive.get("ushers").forEach((usher) => {
-                this.ractive.set(`ushers.${usher.id}.movementMaxSeconds`, max);
+            Object.keys(this.ractive.get("ushers")).forEach((usherId) => {
+                this.ractive.set(`ushers.${usherId}.movementMaxSeconds`, max);
             });
         });
 
@@ -386,6 +387,8 @@ class SimulationRunner {
     }
 
     newSimulation() {
+        this.runId += 1;
+
         let modes = {
             "oneBlindMove": {id: "oneBlindMove", display: "One Blind Move"},
             "gridAssessment": {id: "gridAssessment", display: "Grid Assessment (Not Implemented)"},
@@ -422,7 +425,7 @@ class SimulationRunner {
             size: seatingGrid.size,
             grid: seatingGrid.grid,
             numOfCandlesToLight: seatingGrid.numOfCandlesToLight,
-            ushers: [],
+            ushers: {},
             leadingEdgePersons: [],
             modes: modes,
             selectedMode: modes[mode],
@@ -451,9 +454,9 @@ class SimulationRunner {
         for (let i = 0; i < size; i += center) {
             for (let j = 0; j < size; j += center) {
                 if (!(i === center && j === center)) {
-                    let id = this.ractive.get("ushers").length;
+                    let id = 10 * this.runId + Object.keys(this.ractive.get("ushers")).length;
                     let usher = new Usher(i, j, id, this);
-                    this.ractive.push("ushers", usher);
+                    this.ractive.set(`ushers.${id}`, usher);
                     this.ractive.set(`grid.${i}.${j}`, usher);
                 }
             }
@@ -466,7 +469,8 @@ class SimulationRunner {
     }
 
     run() {
-        this.ractive.get("ushers").forEach((usher) => {
+        Object.keys(this.ractive.get("ushers")).forEach((usherId) => {
+            let usher = this.ractive.get(`ushers.${usherId}`);
             setTimeout(() => {
                 usher.doStep();
             }, this.getMillisecondsForUsherMovement(usher.id));
@@ -475,7 +479,22 @@ class SimulationRunner {
 
     doNextStep(usherId) {
         setTimeout(() => {
-            this.ractive.get(`ushers.${usherId}`).doStep();
+            let usher = this.ractive.get(`ushers.${usherId}`);
+            if (typeof usher !== "undefined" && typeof usher.doStep !== "undefined") {
+                try {
+                    usher.doStep();
+                }
+                catch (e) {
+                    // This should never execute but the 2 undefined checks
+                    // are needed as there seems to be some delay/mistiming
+                    // in the undefining and garbage collection of the usher
+                    // objects.  Without the doStep !== "undefined" check
+                    // the following console.log(usher) will sometimes log
+                    // an object with only the remnants of a candle.
+                    console.error(e);
+                    console.log(usher);
+                }
+            }
         }, this.getMillisecondsForUsherMovement(usherId));
     }
 
