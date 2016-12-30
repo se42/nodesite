@@ -1,5 +1,6 @@
 // TODO LIST:
 // 1 - Clean up and refactor code to make it more readable and testable--this is a speed draft
+//      --> Look through Underscore library for low hanging cleanup fruit
 // 2 - Implement Grid Assessment mode for smarter usher navigation
 // 3 - Implement candle lighting algorithm so the ushers actually light the other candles
 
