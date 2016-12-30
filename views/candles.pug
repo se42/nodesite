@@ -45,46 +45,22 @@ block content
                 Tell me about the different simulation modes
             p.lead One Blind Move will almost always fail with realistic candle lighting times
             p.
-                The One Blind Move method was the first navigation method that
-                I developed for this simulation, and it's not very good.  The
-                goal of this algorithm was simply to develop a method that would
-                allow all individual ushers to navigate to the candle-lighting
-                target, light their candles, and then navigate back to their
-                original positions.  It accomplishes this goal, and will occasionally
-                succeed when all 8 ushers are run simultaneously under friendly
-                conditions, but more often than not the ushers end up deadlocked
-                at the center of the grid with all ushers electing to not move
-                because they cannot get closer to their target.
+                The One Blind Move method works by calculating an ideal movement
+                vector on the N x N grid with locations [i, j] (e.g. [&Delta;i, &Delta;j],
+                so [+1, +1] would be a movement down and to the right, [0, -1]
+                would be straight up, etc.).  If the usher's ideal target location
+                is blocked by another usher, then the blocked usher will wait a
+                few turns before cycling through possible less-than-ideal moves.
+                It will first prefer moving in the same general direction, then
+                opt for sidesteps, then back-side steps, and finally will move
+                the exact opposite direction of where it wants to go.
             p.
-                Introducing the Time to Light Candle parameter really killed this
-                algorithm as the first usher to reach the center candle will
-                sit there for a few seconds while the other ushers pile into
-                the center of the grid.  By the time the first usher's candle
-                is lit, there is nowhere to go and the simulation will stall.
-            p.
-                To make this algorithm succeed every time, set both the min and
-                max values for both the candle lighting and usher movement
-                parameters to 0.  This makes the simulation deterministic, and
-                it will suceed in exactly the same manner every time.  The 0
-                values will still be fed into a setTimeout, delaying each usher's
-                next move to the next turn of the event loop (otherwise the
-                simulation would proceed one usher at a time), but apparently
-                the movements work out.
-            blockquote
-                p.
-                    EDIT:  Setting all of the timing values to 0 doesn't guarantee
-                    success anymore, but it does help.  I added a shuffle function
-                    to the initial run call, so now the ushers don't always start
-                    in the same order which means there is always a stochastic
-                    element to the simulation, event if all of the movements and
-                    events are instantaneous.
-            p.
-                This algorithm will occasionally succeed in a more stochastic
-                environment, but not often.  If you set the candle timing min
-                and max values to 0 and 0.1, respectively, and use the default
-                usher movement values of 0.5 and 1.5, you should eventually
-                observe a successful run.  Set the global speed to 8x or you
-                may be here a while though.
+                Before I implemented the notion of a side/back step, this method
+                would deadlock all the time as the ushers would simply pile into
+                the center.  Now it doesn't deadlock (in that way), but every
+                now and then an usher will get forced into the wrong aisle and
+                will not reach their destination.  This displays the complete
+                lack of planning, hence the One Blind Move name.
 
             p.lead Grid Assessment will be much smarter when it is implemented
             p.

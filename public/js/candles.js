@@ -1,7 +1,6 @@
 // TODO LIST:
-// 1 - Clean up and refactor code to make it more readable and testable--this is a speed draft
+// 1 - Implement candle lighting algorithm so the ushers actually light the other candles
 // 2 - Implement Grid Assessment mode for smarter usher navigation
-// 3 - Implement candle lighting algorithm so the ushers actually light the other candles
 
 class Candle {
     constructor() {
@@ -29,7 +28,7 @@ class AbstractGridLocation {
     }
 
     static getRotationForPosition(i, j, center) {
-        if (!center) {
+        if (_.isUndefined(center)) {
             return "";
         }
         let iDelta = Math.abs(i - center);
@@ -82,7 +81,7 @@ class Usher extends AbstractGridLocation {
         main_loop:
         try {
             if (this.getMe().candle.isLit) {
-                this.goToTarget(this.origin.i, this.origin.j, () => {
+                this.goToDestination(this.origin.i, this.origin.j, () => {
                     console.debug(`Usher ${this.id} is done!`);
                 });
             }
@@ -120,7 +119,7 @@ class Usher extends AbstractGridLocation {
         }
         else {
             let center = this.getAttr("center");
-            this.goToTarget(center + 1, center, () => {
+            this.goToDestination(center + 1, center, () => {
                 this.lightCandle();
             });
         }
@@ -134,108 +133,184 @@ class Usher extends AbstractGridLocation {
         return absValI === 0 && absValJ === 0;
     }
 
-    goToTarget(iTarget, jTarget, actionAtTarget) {
-        if (this.i === iTarget && this.j === jTarget) {
+    goToDestination(iDestination, jDestination, actionAtTarget) {
+        // iDestination and jDestination refer to the i and j values of the ultimate target destination
+        // iTarget and jTarget refer to the i and j values of the immediate/next target grid location
+        if (this.i === iDestination && this.j === jDestination) {
             actionAtTarget();
         }
         else {
             let mode = this.getAttr("selectedMode.id");
             switch(mode) {
                 case "oneBlindMove":
-                    this.doNextMove(iTarget, jTarget, 0);
+                    this.doOneBlindMove(iDestination, jDestination);
                     break;
                 case "gridAssessment":
-                    this.assessGrid(iTarget, jTarget);
+                    this.assessGrid(iDestination, jDestination);
                     break;
                 default:
-                    this.assessGrid(iTarget, jTarget);
+                    this.assessGrid(iDestination, jDestination);
             }
         }
     }
 
-    assessGrid(iTarget, jTarget) {
+    assessGrid(iDestination, jDestination) {
         let grid = this.getAttr("grid");
         console.log(`Usher ${this.id} is now in Grid Assessment mode`);
         throw new Error("Mode not implemented");
     }
 
-    doNextMove(iTarget, jTarget) {
-        // FIXME - this will get stuck if an usher ever needs to move
-        // AWAY from the target to eventually get there
-        let iMove = 0;
-        let jMove = 0;
-        if (iTarget - this.i !== 0) {
-            iMove = (iTarget - this.i) / Math.abs(iTarget - this.i);
+    getMoveVector(iDestination, jDestination) {
+        // iVector and jVector will always evaluate to -1, 0, or 1
+        // Ushers can only move 1 unit at a time, so this tells us
+        // if the usher would ideally prefer to move vertically,
+        // horizontally, or on a diagonal
+        let iVector = 0;
+        let jVector = 0;
+        if (iDestination - this.i !== 0) {
+            iVector = (iDestination - this.i) / Math.abs(iDestination - this.i);
         }
-        if (jTarget - this.j !== 0) {
-            jMove = (jTarget - this.j) / Math.abs(jTarget - this.j);
+        if (jDestination - this.j !== 0) {
+            jVector = (jDestination - this.j) / Math.abs(jDestination - this.j);
         }
-        let iNext = this.i + iMove;
-        let jNext = this.j + jMove;
+        return {i: iVector, j: jVector};
+    }
+
+    doOneBlindMove(iDestination, jDestination) {
         let grid = this.getAttr("grid");
-        if (grid[iNext][jNext].isEmptySpace) {
-            this.move(iNext, jNext);
+
+        let moveVector = this.getMoveVector(iDestination, jDestination);
+        let iVector = moveVector.i;
+        let jVector = moveVector.j;
+        let iMagnitude = Math.abs(iVector);
+        let jMagnitude = Math.abs(jVector);
+
+        let iTarget = this.i + iVector;
+        let jTarget = this.j + jVector;
+
+        // Ideal move in the direction of the destination
+        if (grid[iTarget][jTarget].isEmptySpace) {
+            this.move(iTarget, jTarget);
         }
-        else if (grid[iNext][jNext].isMobile && this.patience < 10) {
+        // If blocked by another usher, wait a few rounds to keep retrying ideal move
+        else if (grid[iTarget][jTarget].isMobile && this.patience < 10) {
             // just queue up another attempt later b/c the Usher may move
             this.patience += 1;
             setTimeout(() => {
                 this.doStep();
             });
         }
-        // attempted diagonal move is blocked
-        else if (Math.abs(iMove) === 1 && Math.abs(jMove) === 1) {
-            // attempt lateral moves
-            if (grid[this.i][jNext].isEmptySpace) {
-                this.move(this.i, jNext);
+        // Then proceed to try non-ideal moves
+        // If ideal move was diagonal:
+        else if (iMagnitude === 1 && jMagnitude === 1) {
+            // Attempt vertical/horizontal moves in the intended direction
+            if (grid[iTarget][this.j].isEmptySpace) {
+                this.move(iTarget, this.j);
             }
-            else if (grid[iNext][this.j].isEmptySpace) {
-                this.move(iNext, this.j);
+            else if (grid[this.i][jTarget].isEmptySpace) {
+                this.move(this.i, jTarget);
             }
+            // Attempt lateral diagonal moves by going the wrong way in 1 direction
+            else if (grid[iTarget][this.j - jVector]) {
+                this.move(iTarget, this.j - jVector);
+            }
+            else if (grid[this.i - iVector][jTarget].isEmptySpace) {
+                this.move(this.i - iVector, jTarget);
+            }
+            // Attempt vertical/horizontal moves in the wrong direction
+            else if (grid[this.i][this.j - jVector].isEmptySpace) {
+                this.move(this.i, this.j - jVector);
+            }
+            else if (grid[this.i - iVector][this.j].isEmptySpace) {
+                this.move(this.i - iVector, this.j);
+            }
+            // Go in the exact opposite direction
+            else if (grid[this.i - iVector][this.j - jVector].isEmptySpace) {
+                this.move(this.i - iVector, this.j - jVector);
+            }
+            // Or just sit still
             else {
-                // throw new Error(`Usher ${this.id} is stuck at ${this.i}-${this.j}!!`);
                 this.move(this.i, this.j);
             }
         }
-        // attempted horizontal move is blocked
-        else if (iMove === 0 && Math.abs(jMove) === 1) {
-            // attempt diagonal moves in same direction
-            if (grid[this.i + 1][jNext].isEmptySpace) {
-                this.move(this.i + 1, jNext);
+        // If ideal move was horizontal:
+        else if (iMagnitude === 0 && jMagnitude === 1) {
+            // Attempt diagonal moves in the intended direction
+            if (grid[this.i - 1][jTarget].isEmptySpace) {
+                this.move(this.i - 1, jTarget);
             }
-            else if (grid[this.i - 1][jNext].isEmptySpace) {
-                this.move(this.i - 1, jNext);
+            else if (grid[this.i + 1][jTarget].isEmptySpace) {
+                this.move(this.i + 1, jTarget);
             }
+            // Attempt vertical moves
+            else if (grid[this.i - 1][this.j].isEmptySpace) {
+                this.move(this.i - 1, this.j);
+            }
+            else if (grid[this.i + 1][this.j].isEmptySpace) {
+                this.move(this.i + 1, this.j);
+            }
+            // Attempt diagonal moves in the wrong direction
+            else if (grid[this.i - 1][this.j - jVector].isEmptySpace) {
+                this.move(this.i - 1, this.j - jVector);
+            }
+            else if (grid[this.i + 1][this.j - jVector].isEmptySpace) {
+                this.move(this.i + 1, this.j - jVector);
+            }
+            // Go in the exact opposite direction
+            else if (grid[this.i][this.j - jVector].isEmptySpace) {
+                this.move(this.i, this.j - jVector);
+            }
+            // Or just sit still
             else {
-                // throw new Error(`Usher ${this.id} is stuck at ${this.i}-${this.j}!!`);
                 this.move(this.i, this.j);
             }
         }
-        // attempted vertical move is blocked
-        else if (Math.abs(iMove) === 1 && jMove === 0) {
-            // attempt diagonal moves in same direction
-            if (grid[iNext][this.j + 1].isEmptySpace) {
-                this.move(iNext, this.j + 1);
+        // If ideal move was vertical:
+        else if (iMagnitude === 1 && jMagnitude === 0) {
+            // Attempt diagonal moves in intended direction
+            if (grid[iTarget][this.j + 1].isEmptySpace) {
+                this.move(iTarget, this.j + 1);
             }
-            else if (grid[iNext][this.j - 1].isEmptySpace) {
-                this.move(iNext, this.j - 1);
+            else if (grid[iTarget][this.j - 1].isEmptySpace) {
+                this.move(iTarget, this.j - 1);
             }
+            // Attempt horizontal moves
+            else if (grid[this.i][this.j + 1].isEmptySpace) {
+                this.move(this.i, this.j + 1);
+            }
+            else if (grid[this.i][this.j - 1].isEmptySpace) {
+                this.move(this.i, this.j - 1);
+            }
+            // Attempt diagonal moves in the wrong direction
+            else if (grid[this.i - iVector][this.j + 1].isEmptySpace) {
+                this.move(this.i - iVector, this.j + 1);
+            }
+            else if (grid[this.i - iVector][this.j - 1].isEmptySpace) {
+                this.move(this.i - iVector, this.j - 1);
+            }
+            // Go in the exact opposite direction
+            else if (grid[this.i - iVector][this.j].isEmptySpace) {
+                this.move(this.i - iVector, this.j);
+            }
+            // Or just sit still
             else {
-                // throw new Error(`Usher ${this.id} is stuck at ${this.i}-${this.j}!!`);
                 this.move(this.i, this.j);
             }
+        }
+        else if (iMagnitude === 0 && jMagnitude === 0) {
+            this.move(iTarget, jTarget);
         }
         else {
-            this.move(iNext, jNext); // this should be a choice of no movement if it gets here
+            throw new Error(`Invalid magnitude calculation for movement of Usher ${this.id}`);
         }
     }
 
-    move(iNext, jNext) {
+    move(iTarget, jTarget) {
         if (_.isUndefined(this.runner)) {
             throw new Error(`Usher ${this.id} accessed undefined runner during move attempt`);
         }
         else {
-            this.runner.moveUsher(this.id, iNext, jNext);
+            this.runner.moveUsher(this.id, iTarget, jTarget);
             this.patience = 0;
         }
     }
@@ -498,37 +573,37 @@ class SimulationRunner {
         }, this.getMillisecondsForUsherMovement(usherId));
     }
 
-    moveUsher(usherId, iNext, jNext, attempts) {
+    moveUsher(usherId, iTarget, jTarget, attempts) {
         // move usher to location (i,j)
         let usher = this.ractive.get(`ushers.${usherId}`);
-        let isEmptySpace = this.ractive.get(`grid.${iNext}.${jNext}.isEmptySpace`);
-        if (usher.i === iNext && usher.j === jNext) {
+        let isEmptySpace = this.ractive.get(`grid.${iTarget}.${jTarget}.isEmptySpace`);
+        if (usher.i === iTarget && usher.j === jTarget) {
             console.debug(`Usher ${usherId} has decided to not move`);
             setTimeout(() => {
                 usher.doStep();
             }, this.getMillisecondsForUsherMovement(usherId));
         }
-        else if (iNext - usher.i > 1 || jNext - usher.j > 1) {
+        else if (iTarget - usher.i > 1 || jTarget - usher.j > 1) {
             throw new Error(`Usher ${usherId} has submitted an invalid move`);
         }
         else if (isEmptySpace) {
             let i = usher.i;
             let j = usher.j;
-            this.ractive.set(`ushers.${usherId}.i`, iNext);
-            this.ractive.set(`ushers.${usherId}.j`, jNext);
-            this.ractive.set(`grid.${iNext}.${jNext}`, usher);
+            this.ractive.set(`ushers.${usherId}.i`, iTarget);
+            this.ractive.set(`ushers.${usherId}.j`, jTarget);
+            this.ractive.set(`grid.${iTarget}.${jTarget}`, usher);
             this.ractive.set(`grid.${i}.${j}`, new EmptySpace());
             setTimeout(() => {
                 usher.doStep();
             }, this.getMillisecondsForUsherMovement(usherId));
         }
-        else if (!isEmptySpace && attempts < 3) {
+        else if (!isEmptySpace && attempts < 10) {
             setTimeout(() => {
-                this.moveUsher(usherId, iNext, jNext, attempts + 1);
+                this.moveUsher(usherId, iTarget, jTarget, attempts + 1);
             });
         }
         else {
-            console.error(`Failed to move Usher ${usherId} to ${iNext}-${jNext} from ${usher.i}-${usher.j}`);
+            console.debug(`Usher ${usherId} cannot move to ${iTarget}-${jTarget} from ${usher.i}-${usher.j}`);
             setTimeout(() => {
                 usher.doStep();
             }, this.getMillisecondsForUsherMovement(usherId));
