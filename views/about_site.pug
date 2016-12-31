@@ -1,15 +1,32 @@
 extends base.pug
 
 block content
-    p.lead I built this site "from scratch" using many common web development tools:
-    ul
-        li Node.js
-        li Express
-        li Pug.js (Jade) Static Templating
-        li Ractive.js Reactive Templating
-        li Bootstrap & Less
-        li Nginx
-        li Ubuntu
-        li DigitalOcean
-    p The code is available on my Github in the
-        a(href="https://github.com/se42/nodesite")  nodesite repository
+    .row
+        .col-sm-12.text-justify
+            h1.text-center About This Site
+            p.lead.text-center
+                | A functional website built from scratch to do cool things.  Code available on 
+                a(href="https://github.com/se42/nodesite" target="_blank") my Github
+                | .
+
+            p.
+                I like <i>doing</i> things on the web.  Blogs are neat and pretty designs
+                are cool too, but they're not really my style.  I wanted a site where
+                I could do whatever I wanted to do, so I built this site from scratch
+                using many common web development tools.
+
+            p.
+                It's hosted on a DigitalOcean Ubuntu server, so I have complete control.
+                I'm using Nginx as a reverse proxy to both dev and production versions
+                of the base app, so I can test out new ideas before breaking my main
+                site.  And I could even set up new apps under new domains or URLs if
+                I ever want to&mdash;dream it and then do it.  I'm using a simplified
+                version of the Git workflow that we and apparently a lot of other people
+                use at work, so if I have a new idea of something I want to try on the
+                internet, I can get it there quickly.
+
+            p.
+                It might not look like much, but it's a functional place where I can
+                <i>do</i> things&mdash;whatever I want, really&mdash;on the internet.
+
+    include skills

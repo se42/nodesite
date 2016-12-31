@@ -1,6 +1,5 @@
 // TODO LIST:
-// 1 - Implement candle lighting algorithm so the ushers actually light the other candles
-// 2 - Implement Grid Assessment mode for smarter usher navigation
+// 1 - Implement Grid Assessment mode for smarter usher navigation
 
 class Candle {
     constructor() {

@@ -1,6 +1,7 @@
 @theme-dark: #000;
 @theme-light: #fff;
 @theme-gray: #444;
+@theme-light-gray: #d9d9d9;
 
 body {
     background: @theme-dark;
@@ -72,6 +73,27 @@ ul.social-links {
     a {
         color: @theme-dark;
         padding: 0 5px;
+    }
+}
+
+// ABOUT SITE STYLES
+.tools-used {
+    p {
+        font-size: large;
+        color: @theme-gray;
+        padding: 10px;
+
+        a {
+            display: block;
+            text-decoration: none;
+            color: @theme-gray;
+            padding: 10px;
+        }
+
+        a:hover {
+            background: @theme-light-gray;
+
+        }
     }
 }
 
