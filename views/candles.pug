@@ -20,7 +20,7 @@ block content
                 and systematically lighting candles that everyone is holding.
                 Starting with a single candle in the center of the room, a
                 group of ushers walk the aisles and the flames are passed through
-                the room until all of the candles are lit. This system struck
+                the room until all of the candles are lit. This process struck
                 me as a good scenario to model for my first simulation, and
                 this page is what I came up with.
             h2 Where is the code?
@@ -53,14 +53,11 @@ block content
                 few turns before cycling through possible less-than-ideal moves.
                 It will first prefer moving in the same general direction, then
                 opt for sidesteps, then back-side steps, and finally will move
-                the exact opposite direction of where it wants to go.
-            p.
-                Before I implemented the notion of a side/back step, this method
-                would deadlock all the time as the ushers would simply pile into
-                the center.  Now it doesn't deadlock (in that way), but every
-                now and then an usher will get forced into the wrong aisle and
-                will not reach their destination.  This displays the complete
-                lack of planning, hence the One Blind Move name.
+                the exact opposite direction of where it wants to go.  The ushers
+                used to occasionally get forced into the wrong aisel, but now
+                the target the entry to their aisle before targeting their origin.
+                That might be a bit of a cheat, but they don't get stuck anymore.
+                Grid Assessment should eliminate the need for this cheat.
 
             p.lead Grid Assessment will be much smarter when it is implemented
             p.
