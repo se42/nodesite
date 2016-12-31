@@ -774,8 +774,8 @@ class SimulationRunner {
         }
     }
 
-    lightUsherCandle(keypathToPerson, usherId) {
-        let keypathToCandle = keypathToPerson + ".candle.isLit";
+    lightUsherCandle(keypathToUsher, usherId) {
+        let keypathToCandle = keypathToUsher + ".candle.isLit";
         setTimeout(() => {
             this.ractive.set(keypathToCandle, true);
             this.ractive.update();  // Ractive doesn't seem to pick up on deep updates
@@ -790,8 +790,8 @@ class SimulationRunner {
             if (!isCandleLit) {
                 setTimeout(() => {
                     this.ractive.set(`grid.${i}.${j}.candle.isLit`, true);
-                    this.ractive.get(`grid.${i}.${j}`).passFlame((i, j) => {
-                        this.lightPersonCandle(i, j);
+                    this.ractive.get(`grid.${i}.${j}`).passFlame((iNext, jNext) => {
+                        this.lightPersonCandle(iNext, jNext);
                     });
                     this.ractive.update();  // Ractive doesn't seem to pick up on deep updates
                 }, this.getMillisecondsToLightCandle());
