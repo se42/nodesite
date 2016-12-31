@@ -20,7 +20,7 @@ Candle.candleSecondsMax = {
 
 class AbstractGridLocation {
     constructor(i, j, center) {
-        this.repr = "fa fa-fw" + AbstractGridLocation.getRotationForPosition(i,j,center);
+        this.repr = "fa fa-fw" + AbstractGridLocation.getRotationForPosition(i, j, center);
         this.i = i;
         this.j = j;
         this.isEmptySpace = false;
@@ -45,6 +45,9 @@ class AbstractGridLocation {
         else if (j < center && iDelta < jDelta) {
             return " fa-rotate-270";
         }
+        else {
+            return "";
+        }
     }
 }
 
@@ -53,6 +56,50 @@ class Person extends AbstractGridLocation {
         super(i, j, center);
         this.repr += " fa-fire candle";
         this.candle = new Candle();
+        this.orientation = Person.getOrientationForPosition(i, j, center);
+    }
+
+    passFlame(runnerFunction) {
+        if (this.orientation === "vertical") {
+            let iValues = [this.i + 1, this.i - 1];
+            iValues.forEach((i) => {
+                runnerFunction(i, this.j);
+            });
+        }
+        else if (this.orientation === "horizontal") {
+            let jValues = [this.j + 1, this.j - 1];
+            jValues.forEach((j) => {
+                runnerFunction(this.i, j);
+            });
+        }
+        else {
+            throw new Error(`Unknown orientation ${this.orientation} for Person ${this.i}-${this.j}`);
+        }
+    }
+
+    // Ractive did *not* like when the AbstractGridLocation static method returned an object
+    // with both orientation and roation class
+    static getOrientationForPosition(i, j, center) {
+        if (_.isUndefined(center)) {
+            return "";
+        }
+        let iDelta = Math.abs(i - center);
+        let jDelta = Math.abs(j - center);
+        if (i < center && jDelta < iDelta) {
+            return "horizontal";
+        }
+        else if (j > center && iDelta < jDelta) {
+            return "vertical";
+        }
+        else if (i > center && jDelta < iDelta) {
+            return "horizontal";
+        }
+        else if (j < center && iDelta < jDelta) {
+            return "vertical";
+        }
+        else {
+            return "none";
+        }
     }
 }
 
@@ -77,13 +124,11 @@ class Usher extends AbstractGridLocation {
         this.movementMaxSeconds = Usher.usherSecondsMax.default;
     }
 
-    doStep() {
+    mainLoop() {
         main_loop:
         try {
             if (this.getMe().candle.isLit) {
-                this.goToDestination(this.origin.i, this.origin.j, () => {
-                    console.debug(`Usher ${this.id} is done!`);
-                });
+                this.lightCandlesOnAisle();
             }
             else {
                 this.lightCandle();
@@ -112,10 +157,29 @@ class Usher extends AbstractGridLocation {
         }
     }
 
+    getAisleStartLocation() {
+        let center = this.runner.ractive.get("center");
+        let origin = this.origin;
+        let iDelta = center - origin.i;
+        let jDelta = center - origin.j;
+        let i = Math.abs(iDelta - Math.ceil(SeatingGrid.frontRowLength / 2));
+        let j = Math.abs(jDelta - Math.ceil(SeatingGrid.frontRowLength / 2));
+
+        if (iDelta === 0) {
+            return {i: origin.i, j: j}
+        }
+        else if (jDelta === 0) {
+            return {i: i, j: origin.j}
+        }
+        else {
+            return {i: i, j: j};
+        }
+    }
+
     lightCandle() {
         if (this.getMe().isUsherAtCenterCandle()){
             // runner assumed to exist if getMe() worked
-            this.runner.lightCandle(`ushers.${this.id}`, this.id);
+            this.runner.lightUsherCandle(`ushers.${this.id}`, this.id);
         }
         else {
             let center = this.getAttr("center");
@@ -176,6 +240,16 @@ class Usher extends AbstractGridLocation {
         return {i: iVector, j: jVector};
     }
 
+    getEuclideanVectorToTarget(iTarget, jTarget) {
+        // iTarget/jTarget here have nothing to do with immediately accessible moves as in other contexts
+        let center = this.runner.ractive.get("center");
+        let x = this.j - center;
+        let y = center - this.i;
+        let xDestination = jTarget - center;
+        let yDestination = center - iTarget;
+        return {x: xDestination - x, y: yDestination - y};
+    }
+
     doOneBlindMove(iDestination, jDestination) {
         let grid = this.getAttr("grid");
 
@@ -197,7 +271,7 @@ class Usher extends AbstractGridLocation {
             // just queue up another attempt later b/c the Usher may move
             this.patience += 1;
             setTimeout(() => {
-                this.doStep();
+                this.mainLoop();
             });
         }
         // Then proceed to try non-ideal moves
@@ -312,6 +386,97 @@ class Usher extends AbstractGridLocation {
         else {
             this.runner.moveUsher(this.id, iTarget, jTarget);
             this.patience = 0;
+        }
+    }
+
+
+    lightCandlesOnAisle() {
+        let center = this.runner.ractive.get("center");
+        let grid = this.runner.ractive.get("grid");
+
+        // so this might be overkill for this project, but it was fun to figure out the matrix-to-Euclidean conversion
+        let vectorToOrigin = this.getEuclideanVectorToTarget(this.origin.i, this.origin.j);
+        let vectorToCenter = this.getEuclideanVectorToTarget(center, center);
+        let angleToOrigin = (Math.atan2(vectorToOrigin.y, vectorToOrigin.x) * 180) / Math.PI;
+        let angleToCenter = (Math.atan2(vectorToCenter.y, vectorToCenter.x) * 180) / Math.PI;
+        let distanceToCenter = Math.sqrt(Math.pow(vectorToCenter.x, 2) + Math.pow(vectorToCenter.y, 2));
+
+        let isUsherOnAisle = Math.abs(angleToCenter - angleToOrigin) === 180;
+        let isUsherInCenterSection = distanceToCenter < Math.ceil(SeatingGrid.frontRowLength / 2);
+        let isUsherOnOrigin = this.i === this.origin.i && this.j === this.origin.j;
+
+        if ((!isUsherOnAisle || isUsherInCenterSection) && !isUsherOnOrigin) {
+            this.goToDestination(this.getAisleStartLocation().i, this.getAisleStartLocation().j, () => {
+            this.lightCandlesOnAisle();
+        });
+        }
+        else if (this.i === center) {
+            this.lightCandlesUpDown(grid);
+        }
+        else if (this.j === center) {
+            this.lightCandlesLeftRight(grid);
+        }
+        else {
+            this.lightCandlesDiagonal(grid, center);
+        }
+    }
+
+    lightCandlesUpDown(grid) {
+        if (_.isObject(grid[this.i + 1][this.j].candle) && !grid[this.i + 1][this.j].candle.isLit) {
+            this.runner.lightPersonCandle(this.i+1, this.j, this.id);
+        }
+        else if (_.isObject(grid[this.i - 1][this.j].candle) && !grid[this.i - 1][this.j].candle.isLit) {
+            this.runner.lightPersonCandle(this.i-1, this.j, this.id);
+        }
+        else if (this.i === this.origin.i && this.j === this.origin.j) {
+            console.log(`Usher ${this.id} is done!`);
+        }
+        else {
+            let iVector = this.getMoveVector(this.origin.i, this.origin.j).i;
+            let jVector = this.getMoveVector(this.origin.i, this.origin.j).j;
+            this.move(this.i + iVector, this.j + jVector);
+        }
+    }
+
+    lightCandlesLeftRight(grid) {
+        if (_.isObject(grid[this.i][this.j + 1].candle) && !grid[this.i][this.j + 1].candle.isLit) {
+            this.runner.lightPersonCandle(this.i, this.j+1, this.id);
+        }
+        else if (_.isObject(grid[this.i][this.j - 1].candle) && !grid[this.i][this.j - 1].candle.isLit) {
+            this.runner.lightPersonCandle(this.i, this.j-1, this.id);
+        }
+        else if (this.i === this.origin.i && this.j === this.origin.j) {
+            console.log(`Usher ${this.id} is done!`);
+        }
+        else {
+            let iVector = this.getMoveVector(this.origin.i, this.origin.j).i;
+            let jVector = this.getMoveVector(this.origin.i, this.origin.j).j;
+            this.move(this.i + iVector, this.j + jVector);
+        }
+    }
+
+    lightCandlesDiagonal(grid, center) {
+        let iVectorToCenter = this.getMoveVector(center, center).i;
+        let jVectorToCenter = this.getMoveVector(center, center).j;
+
+        let i1 = this.i + iVectorToCenter;
+        let j1 = this.j;
+        let i2 = this.i;
+        let j2 = this.j + jVectorToCenter;
+
+        if ((_.isObject(grid[i1][j1].candle) && !grid[i1][j1].candle.isLit)) {
+            this.runner.lightPersonCandle(i1, j1, this.id);
+        }
+        else if ((_.isObject(grid[i2][j2].candle) && !grid[i2][j2].candle.isLit)) {
+            this.runner.lightPersonCandle(i2, j2, this.id);
+        }
+        else if ((this.i === this.origin.i && this.j === this.origin.j)) {
+            console.log(`Usher ${this.id} is done!`);
+        }
+        else {
+            let iVectorToOrigin = this.getMoveVector(this.origin.i, this.origin.j).i;
+            let jVectorToOrigin = this.getMoveVector(this.origin.i, this.origin.j).j;
+            this.move(this.i + iVectorToOrigin, this.j + jVectorToOrigin);
         }
     }
 }
@@ -501,7 +666,6 @@ class SimulationRunner {
             grid: seatingGrid.grid,
             numOfCandlesToLight: seatingGrid.numOfCandlesToLight,
             ushers: {},
-            leadingEdgePersons: [],
             modes: modes,
             selectedMode: modes[mode],
             globalSpeeds: globalSpeeds,
@@ -547,7 +711,7 @@ class SimulationRunner {
         _.shuffle(_.keys(this.ractive.get("ushers"))).forEach((usherId) => {
             let usher = this.ractive.get(`ushers.${usherId}`);
             setTimeout(() => {
-                usher.doStep();
+                usher.mainLoop();
             }, this.getMillisecondsForUsherMovement(usher.id));
         });
     }
@@ -555,15 +719,15 @@ class SimulationRunner {
     doNextStep(usherId) {
         setTimeout(() => {
             let usher = this.ractive.get(`ushers.${usherId}`);
-            if (_.isObject(usher) && _.isFunction(usher.doStep)) {
+            if (_.isObject(usher) && _.isFunction(usher.mainLoop)) {
                 try {
-                    usher.doStep();
+                    usher.mainLoop();
                 }
                 catch (e) {
                     // This should never execute but the 2 checks are
                     // needed as there seems to be some delay/mistiming
                     // in the un-defining and garbage collection of the
-                    // usher objects.  Without the _.isFunction(usher.doStep))
+                    // usher objects.  Without the _.isFunction(usher.mainLoop))
                     // check the following console.log(usher) will sometimes
                     // log an object with only the remnants of a candle.
                     console.error(e);
@@ -580,7 +744,7 @@ class SimulationRunner {
         if (usher.i === iTarget && usher.j === jTarget) {
             console.debug(`Usher ${usherId} has decided to not move`);
             setTimeout(() => {
-                usher.doStep();
+                usher.mainLoop();
             }, this.getMillisecondsForUsherMovement(usherId));
         }
         else if (iTarget - usher.i > 1 || jTarget - usher.j > 1) {
@@ -594,7 +758,7 @@ class SimulationRunner {
             this.ractive.set(`grid.${iTarget}.${jTarget}`, usher);
             this.ractive.set(`grid.${i}.${j}`, new EmptySpace());
             setTimeout(() => {
-                usher.doStep();
+                usher.mainLoop();
             }, this.getMillisecondsForUsherMovement(usherId));
         }
         else if (!isEmptySpace && attempts < 10) {
@@ -605,18 +769,37 @@ class SimulationRunner {
         else {
             console.debug(`Usher ${usherId} cannot move to ${iTarget}-${jTarget} from ${usher.i}-${usher.j}`);
             setTimeout(() => {
-                usher.doStep();
+                usher.mainLoop();
             }, this.getMillisecondsForUsherMovement(usherId));
         }
     }
 
-    lightCandle(keypathToPerson, usherId) {
-        let keypathToCandle = keypathToPerson + ".candle.isLit";
+    lightUsherCandle(keypathToUsher, usherId) {
+        let keypathToCandle = keypathToUsher + ".candle.isLit";
         setTimeout(() => {
             this.ractive.set(keypathToCandle, true);
             this.ractive.update();  // Ractive doesn't seem to pick up on deep updates
             this.doNextStep(usherId);
         }, this.getMillisecondsToLightCandle());
+    }
+
+    lightPersonCandle(i, j, usherId) {
+        let person = this.ractive.get(`grid.${i}.${j}`);
+        if (_.isObject(person) && !person.isEmptySpace && !person.isMobile && _.isFunction(person.passFlame)) {
+            let isCandleLit = this.ractive.get(`grid.${i}.${j}.candle.isLit`);
+            if (!isCandleLit) {
+                setTimeout(() => {
+                    this.ractive.set(`grid.${i}.${j}.candle.isLit`, true);
+                    this.ractive.get(`grid.${i}.${j}`).passFlame((iNext, jNext) => {
+                        this.lightPersonCandle(iNext, jNext);
+                    });
+                    this.ractive.update();  // Ractive doesn't seem to pick up on deep updates
+                }, this.getMillisecondsToLightCandle());
+            }
+        }
+        if (!_.isUndefined(usherId)) {
+            this.doNextStep(usherId);
+        }
     }
 
     getMillisecondsForUsherMovement(usherId) {
