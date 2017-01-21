@@ -1,24 +1,29 @@
-extends base.pug
+doctype html
+html(lang="en")
 
-block content
-    .row
-        .col-sm-4
-            .thumbnail.headshot
-                img.img-responsive.img-rounded(src="img/my_face.jpg" alt="Responsive image")
-                .caption.text-center
-                    p.lead Scott Edwards | Raleigh, NC
-                    p
-                        ul.list-inline.social-links
-                            li: a(href="https://github.com/se42" target="_blank"): i.fa.fa-3x.fa-github(aria-hidden="true")
-                            li: a(href="https://www.linkedin.com/in/scottedwards6" target="_blank"): i.fa.fa-3x.fa-linkedin(aria-hidden="true")
-        .col-sm-8
-            .text-center
-                h1 About Me
-                p.lead.
-                    My name is Scott Edwards and I'm a Jr. Software Engineer.
-                p.lead.
-                    I got bored in my old job and taught myself how to program.
-            .text-justify
+head
+    include site_head
+
+body
+    include navbar
+
+    .container
+        .row
+            .col.sm12.m4
+                #headshot.card
+                    .card-image
+                        img(src="img/my_face.jpg")
+                    .card-action.center-align
+                        a(href="https://github.com/se42" target="_blank"): i.fa.fa-3x.fa-github
+                        a(href="https://www.linkedin.com/in/scottedwards6" target="_blank"): i.fa.fa-3x.fa-linkedin
+            .col-sm12.m8
+                h2 About Me
+                p.flow-text.
+                    Jr. Web Developer/Software Engineer
+                p.flow-text.
+                    Got bored at work and taught myself how to code
+                p.flow-text.
+                    Goal is to deliver complete web apps on Linux
                 p.
                     Growing up I was always your typical math and science kid, so
                     when I got into Georgia Tech it was an easy decision to go.
@@ -52,5 +57,7 @@ block content
                     site more or less from scratch&mdash;it might not look like much,
                     but it's hopefully going to be an awesome place to do cool things
                     on the internet.
-        .col-sm-12
-            include skills
+
+        include skills
+
+    include site_foot

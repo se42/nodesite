@@ -3,100 +3,89 @@
 @theme-gray: #444;
 @theme-light-gray: #d9d9d9;
 
+// deep-orange palette from materializecss
+@lighten-5: #fbe9e7;
+@lighten-4: #ffccbc;
+@lighten-3: #ffab91;
+@lighten-2: #ff8a65;
+@lighten-1: #ff7043;
+@primary:   #ff5722;
+@darken-1:  #f4511e;
+@darken-2:  #e64a19;
+@darken-3:  #d84315;
+@darken-4:  #bf360c;
+@accent-1:  #ff9e80;
+@accent-2:  #ff6e40;
+@accent-3:  #ff3d00;
+@accent-4:  #dd2c00;
+
 body {
-    background: @theme-dark;
+    background: white;
 }
 
-.nav-content {
-    padding-top: 20px;
+a {
+    color: @primary;
 
-    p {
-        margin: 10px;
-        font-size: 24px;
+    &:hover {
+        color: @darken-3;
+    }
+}
 
-        a {
-            color: @theme-light;
-            display: block;
-            text-decoration: none;
+.collection {
+    a.collection-item {
+        color: @primary;
+
+        &:hover {
+            color: @darken-4;
+            background-color: @accent-1;
+        }
+        &:not(.active):hover {
+            color: @darken-4;
+            background-color: @accent-1;
         }
     }
+    li:hover {
+        
+    }
+}
 
-    ul {
+nav {
+    background: @primary;
+    margin-bottom: 20px;
 
-        li {
-            display: block;
+    a {
+        &:hover {
+            color: white;
+        }
 
-            a {
-                display: block;
-                text-decoration: none;
-                color: @theme-light;
-                padding: 10px 0px;
-
-            }
-
-            a:hover {
-                background: @theme-gray;
-            }
+        &.brand-logo {
+            padding-left: 20px;
         }
     }
 }
 
-.main-content {
-    background: @theme-light;
-    padding: 20px 30px;
-
-    // Make sure main-content is always (reasonably) taller than the screen
-    @media (min-height: 400px) {
-        min-height: 600px;
-    }
-    @media (min-height: 600px) {
-        min-height: 800px;
-    }
-    @media (min-height: 800px) {
-        min-height: 1000px;
-    }
-    @media (min-height: 1000px) {
-        min-height: 1200px;
-    }
-    @media (min-height: 1200px) {
-        min-height: 1500px;
-    }
+.navbar-fixed {
+    margin-bottom: 20px;
 }
 
+#nav-mobile.side-nav {
+    li h4 {
+        padding: 0px 20px;
+    }
+}
 
 // ABOUT ME STYLES
-.headshot {
-    border-style: none;
-}
+#headshot.card {
+    margin-right: 20px;
 
-ul.social-links {
     a {
-        color: @theme-dark;
-        padding: 0 5px;
-    }
-}
+        color: black;
 
-// ABOUT SITE STYLES
-.tools-used {
-    p {
-        font-size: large;
-        color: @theme-gray;
-        padding: 10px;
-
-        a {
-            display: block;
-            text-decoration: none;
-            color: @theme-gray;
-            padding: 10px;
-        }
-
-        a:hover {
-            background: @theme-light-gray;
-
+        &:hover {
+            color: @darken-3;
         }
     }
 }
-
 
 // CANDLES STYLES
 .candle {

@@ -1,1 +1,3 @@
-console.log("Base js ready");
+$().ready(() => {
+    $(".button-collapse").sideNav();
+})
