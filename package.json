@@ -18,7 +18,7 @@
   "homepage": "https://github.com/se42/nodesite#readme",
   "dependencies": {
     "express": "^4.14.0",
-    "less": "^2.7.1",
+    "materialize-css": "^0.97.8",
     "minimist": "^1.2.0",
     "pug": "^2.0.0-beta6",
     "underscore": "^1.8.3"

@@ -32,21 +32,11 @@ class AbstractGridLocation {
         }
         let iDelta = Math.abs(i - center);
         let jDelta = Math.abs(j - center);
-        if (i < center && jDelta < iDelta) {
-            return "";
-        }
-        else if (j > center && iDelta < jDelta) {
-            return " fa-rotate-90";
-        }
-        else if (i > center && jDelta < iDelta) {
-            return " fa-rotate-180";
-        }
-        else if (j < center && iDelta < jDelta) {
-            return " fa-rotate-270";
-        }
-        else {
-            return "";
-        }
+        if (i < center && jDelta < iDelta) {return "";}
+        else if (j > center && iDelta < jDelta) {return " fa-rotate-90";}
+        else if (i > center && jDelta < iDelta) {return " fa-rotate-180";}
+        else if (j < center && iDelta < jDelta) {return " fa-rotate-270";}
+        else {return "";}
     }
 }
 
@@ -84,21 +74,11 @@ class Person extends AbstractGridLocation {
         }
         let iDelta = Math.abs(i - center);
         let jDelta = Math.abs(j - center);
-        if (i < center && jDelta < iDelta) {
-            return "horizontal";
-        }
-        else if (j > center && iDelta < jDelta) {
-            return "vertical";
-        }
-        else if (i > center && jDelta < iDelta) {
-            return "horizontal";
-        }
-        else if (j < center && iDelta < jDelta) {
-            return "vertical";
-        }
-        else {
-            return "none";
-        }
+        if (i < center && jDelta < iDelta) {return "horizontal";}
+        else if (j > center && iDelta < jDelta) {return "vertical";}
+        else if (i > center && jDelta < iDelta) {return "horizontal";}
+        else if (j < center && iDelta < jDelta) {return "vertical";}
+        else {return "none";}
     }
 }
 
@@ -164,15 +144,9 @@ class Usher extends AbstractGridLocation {
         let i = Math.abs(iDelta - Math.ceil(SeatingGrid.frontRowLength / 2));
         let j = Math.abs(jDelta - Math.ceil(SeatingGrid.frontRowLength / 2));
 
-        if (iDelta === 0) {
-            return {i: origin.i, j: j}
-        }
-        else if (jDelta === 0) {
-            return {i: i, j: origin.j}
-        }
-        else {
-            return {i: i, j: j};
-        }
+        if (iDelta === 0) {return {i: origin.i, j: j}}
+        else if (jDelta === 0) {return {i: i, j: origin.j}}
+        else {return {i: i, j: j};}
     }
 
     lightCandle() {
@@ -783,12 +757,18 @@ class SimulationRunner {
     }
 
     lightPersonCandle(i, j, usherId) {
+        // FIXME - core problem is that Person timeouts are still valid
+        // after the grid is reset.  They either need to be killed off
+        // or fail silently.
         let person = this.ractive.get(`grid.${i}.${j}`);
+        if (!person) {console.log("There is no person!");}
         if (_.isObject(person) && !person.isEmptySpace && !person.isMobile && _.isFunction(person.passFlame)) {
             let isCandleLit = this.ractive.get(`grid.${i}.${j}.candle.isLit`);
             if (!isCandleLit) {
                 setTimeout(() => {
                     this.ractive.set(`grid.${i}.${j}.candle.isLit`, true);
+                    // FIXME - next line throws an error if grid size is increased
+                    // after Persons have begun passing flames to other Persons
                     this.ractive.get(`grid.${i}.${j}`).passFlame((iNext, jNext) => {
                         this.lightPersonCandle(iNext, jNext);
                     });
@@ -829,10 +809,3 @@ SimulationRunner.globalSpeed = {
 };
 
 new SimulationRunner();
-
-
-$("[name='control-panel-parameter']").popover({
-    placement: "auto",
-    trigger: "hover focus",
-});
-

@@ -1,209 +1,213 @@
-extends base
+doctype html
+html(lang="en")
 
-block content
-    .row
-        .col-sm-12
-            script#candles-template(type="text/ractive")
-                include candles-template
-            #candles-simulation
-            hr
-    .row
-        .col-xs-12
-            h2 So what is this?
-            p.lead
-                | This is a simulation of a Christmas Eve candle lighting ceremony
-                | implemented using  
-                a(href="http://www.ractivejs.org/" target="_blank") Ractive.js
-                | .
-            p.
-                Our Christmas Eve ceremony always ends by turning off the lights
-                and systematically lighting candles that everyone is holding.
-                Starting with a single candle in the center of the room, a
-                group of ushers walk the aisles and the flames are passed through
-                the room until all of the candles are lit. This process struck
-                me as a good scenario to model for my first simulation, and
-                this page is what I came up with.
-            h2 Where is the code?
-            p Relevant 
-                a(
-                    href="https://github.com/se42/nodesite/blob/develop/public/js/candles.js"
-                    target="_blank"
-                ) JavaScript
-                |  and 
-                a(
-                    href="https://github.com/se42/nodesite/blob/develop/views/candles-template.pug"
-                    target="_blank"
-                ) Ractive/Pug template
-                |  available on 
-                a(
-                    href="https://github.com/se42/"
-                    target="_blank"
-                ) my Github
-                | .
+head
+    include site_head
 
-            h2.
-                Tell me about the different simulation modes
-            p.lead One Blind Move will almost always fail with realistic candle lighting times
-            p.
-                The One Blind Move method works by calculating an ideal movement
-                vector on the N x N grid with locations [i, j] (e.g. [&Delta;i, &Delta;j],
-                so [+1, +1] would be a movement down and to the right, [0, -1]
-                would be straight up, etc.).  If the usher's ideal target location
-                is blocked by another usher, then the blocked usher will wait a
-                few turns before cycling through possible less-than-ideal moves.
-                It will first prefer moving in the preferred general direction, then
-                opt for sidesteps, then back-side steps, and finally will move
-                the exact opposite direction of where it wants to go.  The ushers
-                used to occasionally get forced into the wrong aisle as targeting
-                their origin from a cluttered center section could lead them astray,
-                but now they target the entry to their aisle before targeting their
-                origin.  That might be a bit of a cheat, but they don't get stuck
-                anymore.  Grid Assessment should eliminate the need for this cheat.
+body
+    include navbar
 
-            p.lead Grid Assessment will be much smarter when it is implemented
-            p.
-                The Grid Assessment mode will have ushers assess the full state
-                of the grid before deciding where (or if) to move.  Each usher
-                will use a path planning algorithm that basically considers the
-                target location as the "lowest energy" location, considers other
-                ushers as "high energy" locations, and attempts to move to the
-                next grid location of lowest energy until it arrives at the
-                target location.  Theoretically, switching to this mode after
-                observing a deadlock in the One Blind Move mode should cause the
-                ushers to back off by a square or too, thus allowing the stuck
-                usher to move on towards its final destination.
+    .container
+        .row
+            .col.s12
+                script#candles-template(type="text/ractive")
+                    include candles-template
+                #candles-simulation
+        .row
+            .col.s12
+                h2 So what is this?
+                p.flow-text
+                    | This is a simulation of a Christmas Eve candle lighting ceremony
+                    | implemented using  
+                    a(href="http://www.ractivejs.org/" target="_blank") Ractive.js
+                    | .
+                p.
+                    Our Christmas Eve ceremony always ends by turning off the lights
+                    and systematically lighting candles that everyone is holding.
+                    Starting with a single candle in the center of the room, a
+                    group of ushers walk the aisles and the flames are passed through
+                    the room until all of the candles are lit. This process struck
+                    me as a good scenario to model for my first simulation, and
+                    this page is what I came up with.
+                h2 Where is the code?
+                p Relevant 
+                    a(
+                        href="https://github.com/se42/nodesite/blob/develop/public/js/candles.js"
+                        target="_blank"
+                    ) JavaScript
+                    |  and 
+                    a(
+                        href="https://github.com/se42/nodesite/blob/develop/views/candles-template.pug"
+                        target="_blank"
+                    ) Ractive/Pug templates
+                    |  are available on 
+                    a(
+                        href="https://github.com/se42/"
+                        target="_blank"
+                    ) my Github
+                    | .
 
-            h2 What technology is being used here?
-            p.lead
-                | The core technology that is driving this simulation is 
-                a(href="http://www.ractivejs.org/" target="_blank") Ractive.js
-                | .
-            p.
-                Ractive is a reactive templating library that implements the same
-                two-way data binding that makes big frameworks like Angular
-                so cool, but Ractive is a much simpler unopinionated library
-                which makes it perfect for my use case as I didn't want a full
-                blown Angular or React application.  I was already using Pug (Jade)
-                for my static templates, so once I figured out how to make Pug
-                and Ractive's Mustache templating play nice together I was set.
-            p.
-                Beyond that, it's basically just plain JavaScript.
+                h2.
+                    Tell me about the different simulation modes
+                p.flow-text One Blind Move will almost always fail with realistic candle lighting times
+                p.
+                    The One Blind Move method works by calculating an ideal movement
+                    vector on the N x N grid with locations [i, j] (e.g. [&Delta;i, &Delta;j],
+                    so [+1, +1] would be a movement down and to the right, [0, -1]
+                    would be straight up, etc.).  If the usher's ideal target location
+                    is blocked by another usher, then the blocked usher will wait a
+                    few turns before cycling through possible less-than-ideal moves.
+                    It will first prefer moving in the preferred general direction, then
+                    opt for sidesteps, then back-side steps, and finally will move
+                    the exact opposite direction of where it wants to go.  The ushers
+                    used to occasionally get forced into the wrong aisle as targeting
+                    their origin from a cluttered center section could lead them astray,
+                    but now they target the entry to their aisle before targeting their
+                    origin.  That might be a bit of a cheat, but they don't get stuck
+                    anymore.  Grid Assessment should eliminate the need for this cheat.
 
-            h2.
-                What were some of the biggest challenges?
-            p.lead
-                | It was smooth sailing after I turned off 
-                a(href="http://docs.ractivejs.org/latest/magic-mode" target="_blank") Magic Mode
-                | .
-            p.
-                Ractive has an option called Magic Mode that sounds awesome when
-                you first read about it, so of course I turned it on.  Basically,
-                Magic Mode makes it so you don't have to use the Ractive API to
-                update your Ractive object.  Whenever you access a piece of data
-                that Ractive "knows" about using standard object.attribute notation,
-                Ractive intercepts those get/set operations using the object's
-                accessor functions.
-            p.
-                Sounds great, right?  You can use Ractive without even bothering to
-                learn how it works.  Not.  I'm not entirely sure if my design is just
-                incompatible with Magic Mode or if this type of simulation problem
-                is not a good match for Magic Mode, but with Magic Mode turned on
-                I get all kinds of buggy behavior once the ushers are in the same
-                area of the grid.  Generally speaking the UI starts to duplicate
-                ushers, and the isLit attribute is not stable after being "lit."
-            p.
-                To address this schizophrenic behavior I first changed my design
-                to use a single SimulationRunner object that would hold the Ractive
-                instance so that I <i>knew</i> there was only one object feeding
-                data to the UI.  The old design had each usher instance holding a
-                this.ractive attribute, which I <i>hoped</i> was a reference to
-                the same object, but I didn't know this for sure so I used the
-                SimulationRunner to eliminate this potential issue.  (NOTE:  The
-                schizophrenic behavior still occurs if I turn on Magic Mode, so
-                I at least know this old design wasn't the <i>only</i> problem.)
-            p.
-                The second thing I did was to simply turn off Magic Mode so that
-                I had complete control over my interactions with the Ractive
-                object.  I'm not sure if it's something about my coding style or
-                if it's just the way my brain works, but I never seem to have much
-                luck with tools that claim to be magical.  I'm sure Magic Mode
-                works like a charm for what it was designed to do, but that's the
-                problem:  you still have to understand what it was designed to do
-                and how it works to avoid automagically creating <i>different</i>,
-                sometimes <i>magical</i> bugs.
-            p.
-                Finally, when I wanted to implement a simulation reset feature I
-                was faced with a similar problem:  the ushers were carrying state
-                from the previous run into the new run, leading to more schizophrenic
-                behavior vis-a-vis location and candle.isLit status.  To fix this,
-                I hold an array of the active usher objects on the SimulationRunner.
-                When the simulation is reset, the SimulationRunner iterates through
-                this list and sets the this.runner attribute on each usher to null.
-                The next time the usher tries to "phone in" a change to the runner,
-                it finds a null object and throws an error.  The SimulationRunner
-                always initiates usher steps by calling the same doStep method, so
-                by labeling this code block as the main_loop, catching any errors
-                that bubble up, and then breaking the main_loop, the program is
-                able to gracefully kill off old ushers when they find that their
-                runner has been set to null.  This does have the effect of swallowing
-                errors that I may need to see in development, but this is easy to
-                fix with a console.error statement that can be removed later.
+                p.flow-text Grid Assessment will be much smarter when it is implemented
+                p.
+                    The Grid Assessment mode will have ushers assess the full state
+                    of the grid before deciding where (or if) to move.  Each usher
+                    will use a path planning algorithm that basically considers the
+                    target location as the "lowest energy" location, considers other
+                    ushers as "high energy" locations, and attempts to move to the
+                    next grid location of lowest energy until it arrives at the
+                    target location.  Theoretically, switching to this mode after
+                    observing a deadlock in the One Blind Move mode should cause the
+                    ushers to back off by a square or too, thus allowing the stuck
+                    usher to move on towards its final destination.
 
-            p.lead.
-                Switching from [i,j] matrix notation to an [x,y] Euclidean space
-                is tricky but powerful
+                h2 What technology is being used here?
+                p.flow-text
+                    | The core technology that is driving this simulation is 
+                    a(href="http://www.ractivejs.org/" target="_blank") Ractive.js
+                    | .
+                p.
+                    Ractive is a reactive templating library that implements the same
+                    two-way data binding that makes big frameworks like Angular
+                    so cool, but Ractive is a much simpler unopinionated library
+                    which makes it perfect for my use case as I didn't want a full
+                    blown Angular or React application.  I was already using Pug (Jade)
+                    for my static templates, so once I figured out how to make Pug
+                    and Ractive's Mustache templating play nice together I was set.
+                p.
+                    Beyond that, it's basically just plain JavaScript.
 
-            p.
-                The N x N array that hold the various Person, Usher and EmptySpace
-                objects is accessed using [i,j] matrix notation, but sometimes you
-                want to know where an object is in terms of a Euclidean [x,y] space.
-                Converting between the two is a little tricky at first (both
-                technically and in terms of how you think about the space), but worth
-                grasping.  It was almost certainly overkill for this particular problem,
-                but after converting to [x,y] space we can ensure that an usher is
-                on its aisle by checking whether Math.abs(angleToOrigin - angleToCenter)
-                === 180.  This is only true when the usher is on the line in between
-                its origing and the center of the grid, and is true for any of the
-                8 ushers.
-            
-            h2.
-                What else did I learn from doing this project?
-            p.lead.
-                I'm learning a lot just by working in a professional development environment.
-            p.
-                The first thing that struck me about doing this project from scratch
-                was how obvious it was that I've come to rely on some well-designed
-                systems at work that let us do <i>a lot</i> of things very efficiently.
-                Little things like having a well-organized directory structure, automated
-                build tools, established Git workflows, and known packages already
-                working well together drastically speed up the development process.
-            p.
-                Starting from scratch was a challenge because literally none of those
-                things were in place.  I had to set up my own Node server, then I had
-                to rewrite it using Express, then I had to install and configure Less
-                and set up scripts to compile it and put my JavaScript where it needs
-                to be&mdash;in three different environments.
-            p.lead.
-                But the cool part of this was that every time I came up against
-                a new challenge, or had to learn how to use a new package or library,
-                it seemed like I kind of already knew the (or at a passable) answer
-                because I had seen the problem solved at work without necessarily
-                knowing it.
-            p.
-                Need to configure Nginx for both local and dev/production server
-                cases so your app can more or less run the same way (e.g. behind
-                an Nginx reverse proxy) regardless of where it's running?  We do
-                that at work all the time.  Need to have automated build scripts
-                to compile your Less files and put your static files where Nginx
-                will look for them?  We do that all the time too.
-            p.
-                On top of specific technical challenges, little things like always
-                being mindful of how your code is organized, how you're naming your
-                variables, adhering to DRY principles even when it gets tricky, and
-                feeling comfortable working with large code bases that can't be
-                understood from top to bottom (meaning you <i>have</i> to break it
-                down into functions) are all things I've learned and become comfortable
-                with during a short 4 months of professional work.
+                h2.
+                    What were some of the biggest challenges?
+                p.flow-text
+                    | It was smooth sailing after I turned off 
+                    a(href="http://docs.ractivejs.org/latest/magic-mode" target="_blank") Magic Mode
+                    | .
+                p.
+                    Ractive has an option called Magic Mode that sounds awesome when
+                    you first read about it, so of course I turned it on.  Basically,
+                    Magic Mode makes it so you don't have to use the Ractive API to
+                    update your Ractive object.  Whenever you access a piece of data
+                    that Ractive "knows" about using standard object.attribute notation,
+                    Ractive intercepts those get/set operations using the object's
+                    accessor functions.
+                p.
+                    Sounds great, right?  You can use Ractive without even bothering to
+                    learn how it works.  Not.  I'm not entirely sure if my design is just
+                    incompatible with Magic Mode or if this type of simulation problem
+                    is not a good match for Magic Mode, but with Magic Mode turned on
+                    I get all kinds of buggy behavior once the ushers are in the same
+                    area of the grid.  Generally speaking the UI starts to duplicate
+                    ushers, and the isLit attribute is not stable after being "lit."
+                p.
+                    To address this schizophrenic behavior I first changed my design
+                    to use a single SimulationRunner object that would hold the Ractive
+                    instance so that I <i>knew</i> there was only one object feeding
+                    data to the UI.  The old design had each usher instance holding a
+                    this.ractive attribute, which I <i>hoped</i> was a reference to
+                    the same object, but I didn't know this for sure so I used the
+                    SimulationRunner to eliminate this potential issue.  (NOTE:  The
+                    schizophrenic behavior still occurs if I turn on Magic Mode, so
+                    I at least know this old design wasn't the <i>only</i> problem.)
+                p.
+                    The second thing I did was to simply turn off Magic Mode so that
+                    I had complete control over my interactions with the Ractive
+                    object.  I'm not sure if it's something about my coding style or
+                    if it's just the way my brain works, but I never seem to have much
+                    luck with tools that claim to be magical.  I'm sure Magic Mode
+                    works like a charm for what it was designed to do, but that's the
+                    problem:  you still have to understand what it was designed to do
+                    and how it works to avoid automagically creating <i>different</i>,
+                    sometimes <i>magical</i> bugs.
+                p.
+                    Finally, when I wanted to implement a simulation reset feature I
+                    was faced with a similar problem:  the ushers were carrying state
+                    from the previous run into the new run, leading to more schizophrenic
+                    behavior vis-a-vis location and candle.isLit status.  To fix this,
+                    I hold an array of the active usher objects on the SimulationRunner.
+                    When the simulation is reset, the SimulationRunner iterates through
+                    this list and sets the this.runner attribute on each usher to null.
+                    The next time the usher tries to "phone in" a change to the runner,
+                    it finds a null object and throws an error.  The SimulationRunner
+                    always initiates usher steps by calling the same doStep method, so
+                    by labeling this code block as the main_loop, catching any errors
+                    that bubble up, and then breaking the main_loop, the program is
+                    able to gracefully kill off old ushers when they find that their
+                    runner has been set to null.  This does have the effect of swallowing
+                    errors that I may need to see in development, but this is easy to
+                    fix with a console.error statement that can be removed later.
+                p.
+                    The N x N array that hold the various Person, Usher and EmptySpace
+                    objects is accessed using [i,j] matrix notation, but sometimes you
+                    want to know where an object is in terms of a Euclidean [x,y] space.
+                    Converting between the two is a little tricky at first (both
+                    technically and in terms of how you think about the space), but worth
+                    grasping.  It was almost certainly overkill for this particular problem,
+                    but after converting to [x,y] space we can ensure that an usher is
+                    on its aisle by checking whether Math.abs(angleToOrigin - angleToCenter)
+                    === 180.  This is only true when the usher is on the line in between
+                    its origing and the center of the grid, and is true for any of the
+                    8 ushers.
+                
+                h2.
+                    What else did I learn from doing this project?
+                p.flow-text.
+                    I'm learning a lot just by working in a professional development environment.
+                p.
+                    The first thing that struck me about doing this project from scratch
+                    was how obvious it was that I've come to rely on some well-designed
+                    systems at work that let us do <i>a lot</i> of things very efficiently.
+                    Little things like having a well-organized directory structure, automated
+                    build tools, established Git workflows, and known packages already
+                    working well together drastically speed up the development process.
+                p.
+                    Starting from scratch was a challenge because literally none of those
+                    things were in place.  I had to set up my own Node server, then I had
+                    to rewrite it using Express, then I had to install and configure Less
+                    and set up scripts to compile it and put my JavaScript where it needs
+                    to be&mdash;in three different environments.
+                p.flow-text.
+                    The cool part of this was that every time I came up against
+                    a new challenge, or had to learn how to use a new package or library,
+                    it seemed like I kind of already knew the (or at a passable) answer
+                    because I had seen the problem solved at work without necessarily
+                    knowing it.
+                p.
+                    Need to configure Nginx for both local and dev/production server
+                    cases so your app can more or less run the same way (e.g. behind
+                    an Nginx reverse proxy) regardless of where it's running?  We do
+                    that at work all the time.  Need to have automated build scripts
+                    to compile your Less files and put your static files where Nginx
+                    will look for them?  We do that all the time too.
+                p.
+                    On top of specific technical challenges, little things like always
+                    being mindful of how your code is organized, how you're naming your
+                    variables, adhering to DRY principles even when it gets tricky, and
+                    feeling comfortable working with large code bases that can't be
+                    understood from top to bottom (meaning you <i>have</i> to break it
+                    down into functions) are all things I've learned and become comfortable
+                    with during a short 4 months of professional work.
+    
+    include site_foot
 
-block scripts-foot
+    //- Ractive.js Library & Candles Code
+    script(src="https://unpkg.com/ractive@0.8")
     script(src="js/candles.js")
