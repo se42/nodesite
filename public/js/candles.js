@@ -831,8 +831,8 @@ SimulationRunner.globalSpeed = {
 new SimulationRunner();
 
 
-$("[name='control-panel-parameter']").popover({
-    placement: "auto",
-    trigger: "hover focus",
-});
+$().ready(() => {
+    $('select').material_select();
+    $('.tooltipped').tooltip({delay: 50, position: 'top'});
+})
 
