@@ -1,46 +1,49 @@
 .row
     .col.s12
-        h2 Skills &amp; Tools
-    .center-align
-        .col.sm12.m6.l3
-            ul.collection.with-header
-                li.collection-header: strong Languages &amp; Frameworks
-                li: a.collection-item(href="http://coffeescript.org/" target="_blank") CoffeeScript
-                li: a.collection-item(href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" target="_blank") JavaScript*
-                li: a.collection-item(href="https://www.meteor.com/" target="_blank") Meteor
-                li: a.collection-item(href="https://www.python.org/" target="_blank") Python
-                li: a.collection-item(href="https://www.djangoproject.com/" target="_blank") Django
-                li: a.collection-item(href="https://developer.mozilla.org/en-US/docs/Web/HTML" target="_blank") HTML*
-                li: a.collection-item(href="https://developer.mozilla.org/en-US/docs/Web/CSS" target="_blank") CSS*
-                li: a.collection-item(href="http://lesscss.org/" target="_blank") Less*
-        .col.sm12.m6.l3
-            ul.collection.with-header
-                li.collection-header: strong Server Tools
-                li: a.collection-item(href="https://nodejs.org/en/" target="_blank") Node.js*
-                li: a.collection-item(href="http://expressjs.com/" target="_blank") Express.js*
-                li: a.collection-item(href="https://www.mongodb.com/" target="_blank") MongoDB
-                li: a.collection-item(href="https://www.postgresql.org/" target="_blank") PostgreSQL
-                li: a.collection-item(href="https://www.nginx.com/resources/admin-guide/" target="_blank") Nginx*
-                li: a.collection-item(href="https://letsencrypt.org/" target="_blank") LetsEncrypt*
-                li: a.collection-item(href="https://www.ubuntu.com/" target="_blank") Ubuntu*
-                li: a.collection-item(href="https://www.digitalocean.com/" target="_blank") DigitalOcean*
-        .col.sm12.m6.l3
-            ul.collection.with-header
-                li.collection-header: strong Front End Tools
-                li: a.collection-item(href="https://pugjs.org/" target="_blank") Pug/Jade Static Templates*
-                li: a.collection-item(href="http://www.ractivejs.org/" target="_blank") Ractive Reactive Templates*
-                li: a.collection-item(href="http://getbootstrap.com/" target="_blank") Bootstrap
-                li: a.collection-item(href="http://materializecss.com/" target="_blank") Materialize CSS*
-                li: a.collection-item(href="https://jquery.com/" target="_blank") jQuery (*lightly)
-        .col.sm12.m6.l3
-            ul.collection.with-header
-                li.collection-header: strong Dev Tools
-                li: a.collection-item(href="https://git-scm.com/" target="_blank") Git*
-                li: a.collection-item(href="https://github.com/" target="_blank") GitHub*
-                li: a.collection-item(href="https://bitbucket.org/" target="_blank") Bitbucket
-                li: a.collection-item(href="https://www.atlassian.com/software/jira" target="_blank") Jira
-                li: a.collection-item(href="https://www.atlassian.com/software/confluence" target="_blank") Confluence
-                li: a.collection-item(href="https://mochajs.org/" target="_blank") Mocha Test Runner
-                li: a.collection-item(href="http://chaijs.com/" target="_blank") Chai Test Library
-    .col.s12
-        p * indicates those used in this site
+        h2 Full Stack Skills &amp; Tools
+    .col.s12.m10.l8
+        .skills-collections.center-align
+            ul.collapsible.popout(data-collapsible="accordion")
+                li
+                    .collapsible-header: strong Front End Tools
+                    .collapsible-body
+                        .section
+                            .chip: a(href="http://getbootstrap.com/" target="_blank") Bootstrap
+                            .chip: a(href="http://materializecss.com/" target="_blank") Materialize CSS
+                            .chip: a(href="http://lesscss.org/" target="_blank") Less
+                            .chip: a(href="http://sass-lang.com/" target="_blank") Sass
+                            .chip: a(href="https://jquery.com/" target="_blank") jQuery
+                            .chip: a(href="https://pugjs.org/" target="_blank") Pug/Jade Static Templates
+                            .chip: a(href="http://www.ractivejs.org/" target="_blank") Ractive Reactive Templates
+                li
+                    .collapsible-header.active: strong Languages &amp; Frameworks
+                    .collapsible-body
+                        .section
+                            .chip: a(href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" target="_blank") JavaScript
+                            .chip: a(href="http://coffeescript.org/" target="_blank") CoffeeScript
+                            .chip: a(href="https://www.meteor.com/" target="_blank") Meteor
+                            .chip: a(href="https://www.python.org/" target="_blank") Python
+                            .chip: a(href="https://www.djangoproject.com/" target="_blank") Django
+                li
+                    .collapsible-header: strong Server Tools
+                    .collapsible-body
+                        .section
+                            .chip: a(href="https://nodejs.org/en/" target="_blank") Node.js
+                            .chip: a(href="http://expressjs.com/" target="_blank") Express.js
+                            .chip: a(href="https://www.mongodb.com/" target="_blank") MongoDB
+                            .chip: a(href="https://www.postgresql.org/" target="_blank") PostgreSQL
+                            .chip: a(href="https://www.nginx.com/resources/admin-guide/" target="_blank") Nginx
+                            .chip: a(href="https://letsencrypt.org/" target="_blank") LetsEncrypt
+                            .chip: a(href="https://www.ubuntu.com/" target="_blank") Ubuntu
+                            .chip: a(href="https://www.digitalocean.com/" target="_blank") DigitalOcean
+                li
+                    .collapsible-header: strong Dev Tools
+                    .collapsible-body
+                        .section
+                            .chip: a(href="https://git-scm.com/" target="_blank") Git
+                            .chip: a(href="https://github.com/" target="_blank") GitHub
+                            .chip: a(href="https://bitbucket.org/" target="_blank") Bitbucket
+                            .chip: a(href="https://www.atlassian.com/software/jira" target="_blank") Jira
+                            .chip: a(href="https://www.atlassian.com/software/confluence" target="_blank") Confluence
+                            .chip: a(href="https://mochajs.org/" target="_blank") Mocha Test Runner
+                            .chip: a(href="http://chaijs.com/" target="_blank") Chai Test Library
