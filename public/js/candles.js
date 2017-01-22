@@ -17,9 +17,9 @@ Candle.candleSecondsMax = {
     default: 5,
 };
 
-class AbstractGridLocation {
+class GridLocation {
     constructor(i, j, center) {
-        this.repr = "fa fa-fw" + AbstractGridLocation.getRotationForPosition(i, j, center);
+        this.repr = "fa fa-fw" + GridLocation.getRotationForPosition(i, j, center);
         this.i = i;
         this.j = j;
         this.isEmptySpace = false;
@@ -40,7 +40,7 @@ class AbstractGridLocation {
     }
 }
 
-class Person extends AbstractGridLocation {
+class Person extends GridLocation {
     constructor(i, j, center) {
         super(i, j, center);
         this.repr += " fa-fire candle";
@@ -66,7 +66,7 @@ class Person extends AbstractGridLocation {
         }
     }
 
-    // Ractive did *not* like when the AbstractGridLocation static method returned an object
+    // Ractive did *not* like when the GridLocation static method returned an object
     // with both orientation and roation class
     static getOrientationForPosition(i, j, center) {
         if (_.isUndefined(center)) {
@@ -82,14 +82,14 @@ class Person extends AbstractGridLocation {
     }
 }
 
-class EmptySpace extends AbstractGridLocation {
+class EmptySpace extends GridLocation {
     constructor(i, j) {
         super(i, j);
         this.isEmptySpace = true;
     }
 }
 
-class Usher extends AbstractGridLocation {
+class Usher extends GridLocation {
     constructor(i, j, id, runner) {
         super(i, j);
         this.repr += " fa-user candle";
@@ -757,22 +757,19 @@ class SimulationRunner {
     }
 
     lightPersonCandle(i, j, usherId) {
-        // FIXME - core problem is that Person timeouts are still valid
-        // after the grid is reset.  They either need to be killed off
-        // or fail silently.
         let person = this.ractive.get(`grid.${i}.${j}`);
-        if (!person) {console.log("There is no person!");}
         if (_.isObject(person) && !person.isEmptySpace && !person.isMobile && _.isFunction(person.passFlame)) {
             let isCandleLit = this.ractive.get(`grid.${i}.${j}.candle.isLit`);
             if (!isCandleLit) {
+                let currentRunId = this.runId; // close over runId to check validity when timeout function comes back around
                 setTimeout(() => {
-                    this.ractive.set(`grid.${i}.${j}.candle.isLit`, true);
-                    // FIXME - next line throws an error if grid size is increased
-                    // after Persons have begun passing flames to other Persons
-                    this.ractive.get(`grid.${i}.${j}`).passFlame((iNext, jNext) => {
-                        this.lightPersonCandle(iNext, jNext);
-                    });
-                    this.ractive.update();  // Ractive doesn't seem to pick up on deep updates
+                    if (this.runId === currentRunId) {
+                        this.ractive.set(`grid.${i}.${j}.candle.isLit`, true);
+                        this.ractive.get(`grid.${i}.${j}`).passFlame((iNext, jNext) => {
+                            this.lightPersonCandle(iNext, jNext);
+                        });
+                        this.ractive.update();  // Ractive doesn't seem to pick up on deep updates
+                    }
                 }, this.getMillisecondsToLightCandle());
             }
         }
