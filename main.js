@@ -5,6 +5,8 @@ const _ = require('underscore');
 const port = !_.isUndefined(argv.port) ? argv.port : 8080;
 let app = express();
 
+app.disable('x-powered-by');
+
 app.set('view engine', 'pug');
 app.set('views', './views');
 
