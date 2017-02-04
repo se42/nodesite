@@ -1,8 +1,8 @@
-let argv = require('minimist')(process.argv.slice(2));
+const argv = require('minimist')(process.argv.slice(2));
 const express = require('express');
 const _ = require('underscore');
 
-let port = !_.isUndefined(argv.port) ? argv.port : 8080;
+const port = !_.isUndefined(argv.port) ? argv.port : 8080;
 let app = express();
 
 app.set('view engine', 'pug');
